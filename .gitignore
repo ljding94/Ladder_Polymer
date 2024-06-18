@@ -1,0 +1,10 @@
+/*
+!code
+code/local_run.sh
+!analyze
+analyze/__pycache__
+!plot
+plot/__pycache__
+plot/figures/*
+!README.md
+!.gitignore
