@@ -12,7 +12,7 @@ def read_Delta_Sq_data(folder, parameters):
     for segment_type, L, logKt, logKb, Rf in parameters:
         filename = f"{folder}/obs_{segment_type}_L{L:.0f}_logKt{logKt:.2f}_logKb{logKb:.2f}_Rf{Rf:.3f}_SqB.csv"
         print("reading: ", filename)
-        try:
+        if os.path.exists(filename):
             Sqdata = np.genfromtxt(filename, delimiter=',', skip_header=1)
             features = Sqdata[0, 2: 7]
             Sq, q = Sqdata[0, 7:], Sqdata[2, 7:]
@@ -20,9 +20,8 @@ def read_Delta_Sq_data(folder, parameters):
             Delta_Sq = Sq/Sq_rod_discrete
             all_features.append(features)
             all_Delta_Sq.append(Delta_Sq)
-        except FileNotFoundError:
+        else:
             print(f"Warning: File {filename} not found.")
-            #return None
     return np.array(all_features), all_Delta_Sq, q
 
 
