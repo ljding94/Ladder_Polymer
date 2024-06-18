@@ -4,11 +4,13 @@ import matplotlib.pyplot as plt
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel
 import random
+import os
 
 
 def read_Delta_Sq_data(folder, parameters):
     all_features = []
     all_Delta_Sq = []
+    q = []
     for segment_type, L, logKt, logKb, Rf in parameters:
         filename = f"{folder}/obs_{segment_type}_L{L:.0f}_logKt{logKt:.2f}_logKb{logKb:.2f}_Rf{Rf:.3f}_SqB.csv"
         print("reading: ", filename)
@@ -212,10 +214,10 @@ def GaussianProcess_optimization(folder, parameters, all_feature_names):
     all_features, all_Delta_Sq, q = read_Delta_Sq_data(folder, parameters)
 
     grid_size = 40
-    theta_per_feature = {#"Rf": (np.logspace(0, 3, grid_size), np.logspace(-6, -3, grid_size)),
-                         #"Rg": (np.logspace(-1.5, 1.2, grid_size), np.logspace(-5.5, -1, grid_size)), # under Delta Sq space
-                         "Rg": (np.logspace(-2, 2, grid_size), np.logspace(-4, -1, grid_size)),
-                         #"L": (np.logspace(0, 1, grid_size), np.logspace(-12, -9, grid_size))
+    theta_per_feature = {"Rf": (np.logspace(0, 3, grid_size), np.logspace(-6, -3, grid_size)),
+                         "Rg": (np.logspace(-1.5, 1.2, grid_size), np.logspace(-5.5, -1, grid_size)), # under Delta Sq space
+                         #"Rg": (np.logspace(-2, 2, grid_size), np.logspace(-4, -1, grid_size)),
+                         "L": (np.logspace(0, 1, grid_size), np.logspace(-12, -9, grid_size))
                          }
 
     plt.figure()
@@ -227,9 +229,10 @@ def GaussianProcess_optimization(folder, parameters, all_feature_names):
             all_features[:, feature_index] = np.power(all_features[:, feature_index], 1/3)
             # feature_name = r"$L^{1/3}$"
         F_learn = all_Delta_Sq
-        if( feature_name == "Rg"):
-            F_learn = np.delete(all_features, feature_index, axis=1)
-            print("F_learn(Rg)", F_learn)
+
+        #if( feature_name == "Rg"):
+        #    F_learn = np.delete(all_features, feature_index, axis=1)
+        #    print("F_learn(Rg)", F_learn)
 
         # witout theta optimization
         kernel = RBF(1) + WhiteKernel(1)
@@ -286,8 +289,8 @@ def GaussianProcess_prediction(folder, parameters, all_feature_names):
 
     grid_size = 40
     theta_per_feature = {"Rf": (np.logspace(0, 3, grid_size), np.logspace(-6, -3, grid_size)),
-                         #"Rg": (np.logspace(-1.5, 1.2, grid_size), np.logspace(-5.5, -1, grid_size)), # under Delta Sq space
-                         "Rg": (np.logspace(-2, 2, grid_size), np.logspace(-4, -1, grid_size)), # learn Rg using L and Rf
+                         "Rg": (np.logspace(-1.5, 1.2, grid_size), np.logspace(-5.5, -1, grid_size)), # under Delta Sq space
+                         #"Rg": (np.logspace(-2, 2, grid_size), np.logspace(-4, -1, grid_size)), # learn Rg using L and Rf
                          "L": (np.logspace(0, 1, grid_size), np.logspace(-12, -9, grid_size))
                          }
 
@@ -300,9 +303,9 @@ def GaussianProcess_prediction(folder, parameters, all_feature_names):
             all_features[:, feature_index] = np.power(all_features[:, feature_index], 1/3)
         F_learn = all_Delta_Sq
 
-        if( feature_name == "Rg"):
-            F_learn = np.delete(all_features, feature_index, axis=1)
-            print("F_learn(Rg)", F_learn)
+        #if( feature_name == "Rg"):
+        #    F_learn = np.delete(all_features, feature_index, axis=1)
+        #    print("F_learn(Rg)", F_learn)
 
 
         concate_data = np.concatenate((all_features[:, feature_index].reshape(-1, 1), F_learn), axis=1)

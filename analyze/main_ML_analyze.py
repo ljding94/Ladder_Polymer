@@ -10,7 +10,7 @@ def main():
     if len(sys.argv) > 1:
         date = sys.argv[1]
         segment_type = sys.argv[2]
-        folder = "/home/dingl1/Ladder_Polymer/data_Cades/"+date
+        folder = "/home/dingl1/ladder_polymer/data_Cades/"+date
         print(f"analyzing folder: {folder} segment type {segment_type}")
         Ls = np.arange(50, 209.1, 1)
         logKts = [1.50]
