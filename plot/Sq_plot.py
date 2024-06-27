@@ -23,16 +23,15 @@ def read_Sq_data(folder, parameters):
     return np.array(all_features), all_Sq, all_Sq_rod, all_Delta_Sq, q
 
 
-def plot_polymer_Sq():
+def plot_polymer_Sq(tex_lw=455.24408, ppi=72):
 
     # map Rf and L to line color and style
-    LS = {50: "-", 70: "--", 90: "-."}
-    LC = {0.4: "tomato", 0.5: "lawngreen", 0.6: "steelblue"}  # black for hard rod
+    # LS = {50: "-", 70: "--", 90: "-."}
+    # LC = {0.4: "tomato", 0.5: "lawngreen", 0.6: "steelblue"}  # black for hard rod
     colors = ["tomato", "lawngreen", "steelblue"]
 
     folder = "../data/20240613"
-    ppi = 72
-    fig = plt.figure(figsize=(246 / ppi * 2, 246 / ppi * 1.6))
+    fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.6))
     axs = fig.subplots(2, 2, sharex=True)
 
     # plot variation of Rf
@@ -47,17 +46,17 @@ def plot_polymer_Sq():
     for i in range(len(parameters)):
         segment_type, L, logKt, logKb, Rf = parameters[i]
         axs[0, 0].loglog(q[n:], all_Sq[i][n:], "-", color=colors[i], label=f"Rf={Rf}")
-        axs[0, 1].semilogx(q[n:], all_Delta_Sq[i][n:],"-", color=colors[i], label=f"Rf={Rf}")
+        axs[0, 1].semilogx(q[n:], all_Delta_Sq[i][n:], "-", color=colors[i], label=f"Rf={Rf}")
 
-    axs[0, 0].tick_params(which="both",direction="in", top="on", right="on", labelbottom=False, labelleft=True, labelsize=8)
-    axs[0, 1].tick_params(which="both",direction="in", top="on", right="on", labelbottom=False, labelleft=True, labelsize=8)
+    axs[0, 0].tick_params(which="both", direction="in", top="on", right="on", labelbottom=False, labelleft=True, labelsize=7)
+    axs[0, 1].tick_params(which="both", direction="in", top="on", right="on", labelbottom=False, labelleft=True, labelsize=7)
 
-    #axs[0, 0].set_xlabel("QB", fontsize=9)
-    axs[0, 0].set_ylabel("S(QB)", fontsize=9)
-    axs[0, 0].legend(title=f"segment_type, L={L}",ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
-    #axs[0, 1].set_xlabel("QB", fontsize=9)
-    axs[0, 1].set_ylabel(r"$\Delta S(QB)$", fontsize=9)
-    axs[0, 1].legend(title=f"segment_type, L={L}",ncol=1, columnspacing=0.5, handlelength=0.5,handletextpad=0.5, frameon=False, fontsize=9)
+    # axs[0, 0].set_xlabel("QB", fontsize=10)
+    axs[0, 0].set_ylabel("S(QB)", fontsize=10)
+    axs[0, 0].legend(title=f"{segment_type}, L={L}", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=10)
+    # axs[0, 1].set_xlabel("QB", fontsize=10)
+    axs[0, 1].set_ylabel(r"$\Delta S(QB)$", fontsize=10)
+    axs[0, 1].legend(title=f"{segment_type}, L={L}", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=10)
 
     # plot variation of L
     parameters = [["outofplane_twist", 50, 1.5, 1.5, 0.500],
@@ -69,11 +68,10 @@ def plot_polymer_Sq():
     for i in range(len(parameters)):
         segment_type, L, logKt, logKb, Rf = parameters[i]
         axs[1, 0].semilogx(q[n:], all_Delta_Sq[i][n:], "-", color=colors[i], label=f"L={L}")
-    axs[1, 0].tick_params(which="both",direction="in", top="on", right="on",labelbottom=True, labelleft=True, labelsize=8)
-    axs[1, 0].set_xlabel("QB", fontsize=9)
-    axs[1, 0].set_ylabel(r"$S\Delta (QB)$", fontsize=9)
-    axs[1, 0].legend(title=f"segment_type, Rf={Rf}", ncol=1, columnspacing=0.5, handlelength=0.5,handletextpad=0.5, frameon=False, fontsize=9)
-
+    axs[1, 0].tick_params(which="both", direction="in", top="on", right="on", labelbottom=True, labelleft=True, labelsize=7)
+    axs[1, 0].set_xlabel("QB", fontsize=10)
+    axs[1, 0].set_ylabel(r"$S\Delta (QB)$", fontsize=10)
+    axs[1, 0].legend(title=f"{segment_type}, Rf={Rf}", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=10)
 
     # plot variaotion of segment_type
     parameters = [["outofplane_twist", 50, 1.5, 1.5, 0.500],
@@ -83,12 +81,12 @@ def plot_polymer_Sq():
     for i in range(len(parameters)):
         segment_type, L, logKt, logKb, Rf = parameters[i]
         axs[1, 1].semilogx(q[n:], all_Delta_Sq[i][n:], "-", color=colors[i], label=f"{segment_type}")
-    axs[1, 1].tick_params(which="both",direction="in", top="on", right="on", labelbottom=True, labelleft=True, labelsize=8)
-    axs[1, 1].set_xlabel("QB", fontsize=9)
-    axs[1, 1].set_ylabel(r"$S\Delta (QB)$", fontsize=9)
-    axs[1, 1].legend(title=f"L={L}, Rf={Rf}", ncol=1, columnspacing=0.5, handlelength=0.5,handletextpad=0.5, frameon=False, fontsize=9)
+    axs[1, 1].tick_params(which="both", direction="in", top="on", right="on", labelbottom=True, labelleft=True, labelsize=7)
+    axs[1, 1].set_xlabel("QB", fontsize=10)
+    axs[1, 1].set_ylabel(r"$S\Delta (QB)$", fontsize=10)
+    axs[1, 1].legend(title=f"L={L}, Rf={Rf}", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=10)
 
-    #axs[1, 1].legend(ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.1, frameon=False, fontsize=9)
+    # axs[1, 1].legend(ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.1, frameon=False, fontsize=10)
 
     plt.tight_layout()
     # plt.show()
@@ -115,8 +113,8 @@ def plot_polymer_Sq_demo():
     ax.loglog(q[n:], all_Sq_rod[0][n:], "--", color="black", label="discrete rod")
     for i in range(len(parameters)):
         ax.loglog(q[n:], all_Sq[i][n:], color=colors[i], label=f"Rf={parameters[i][-1]}")
-    ax.set_xlabel("q", fontsize=9)
-    ax.set_ylabel("S(q)", fontsize=9)
+    ax.set_xlabel("q", fontsize=10)
+    ax.set_ylabel("S(q)", fontsize=10)
 
     axin = ax.inset_axes([0.15, 0.4, 0.4, 0.4])
     for i in range(len(parameters)):
@@ -126,7 +124,7 @@ def plot_polymer_Sq_demo():
     axin.tick_params(axis='both', labelsize=5)
     # axin.set_yticks([1, 2, 3])
 
-    plt.legend(ncol=2, columnspacing=0.5, handlelength=0.5, handletextpad=0.1, frameon=False, fontsize=9)
+    plt.legend(ncol=2, columnspacing=0.5, handlelength=0.5, handletextpad=0.1, frameon=False, fontsize=10)
     plt.tight_layout()
     # plt.show()
     plt.savefig("figures/Sq_demo.png", dpi=300)
@@ -151,9 +149,9 @@ def plot_Rg_L_relation():
         all_features, all_Sq, all_Sq_rod, all_Delta_Sq, q = read_Sq_data(folder, parameters)
         ax.plot(all_features[:, 0], all_features[:, -1], "o-", markerfacecolor="none", markersize=3, label=f"Rf={Rf}")
         # ax.loglog(all_features[:, 0], all_features[:, -1], "o-", markerfacecolor="none", markersize=3, label=f"Rf={Rf}")
-    ax.set_xlabel("L", fontsize=9)
-    ax.set_ylabel("Rg", fontsize=9)
-    plt.legend(ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.1, frameon=False, fontsize=9)
+    ax.set_xlabel("L", fontsize=10)
+    ax.set_ylabel("Rg", fontsize=10)
+    plt.legend(ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.1, frameon=False, fontsize=10)
     plt.tight_layout()
     plt.savefig("figures/Rg_L.png", dpi=300)
     plt.close()

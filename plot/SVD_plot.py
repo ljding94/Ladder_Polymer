@@ -9,8 +9,8 @@ def read_SVD_data(folder, segment_type):
     L, Kt, Kb, Rf, Rg, sqv0, sqv1, sqv2 = np.loadtxt(f"{folder}/{segment_type}_svd_projection.csv", skiprows=1, delimiter=",", unpack=True)
 
 
-def plot_SVD_data():
-    folder = "../data/20240611"
+def plot_SVD_data(tex_lw=455.24408, ppi=72):
+    folder = "../data/20240613"
     segment_type = "outofplane_twist"
     Ls = np.arange(50, 98.1, 1)
     logKts = [2.00]
@@ -22,8 +22,7 @@ def plot_SVD_data():
 
     svd = np.linalg.svd(all_Delta_Sq)
 
-    ppi = 72
-    fig = plt.figure(figsize=(246 / ppi * 1, 246 / ppi * 0.8))
+    fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.8))
     axs00 = fig.add_subplot(111)
 
     axs00.plot(range(len(svd.S)), svd.S, "x", markersize=5, markerfacecolor='none', label=r"$\Sigma$")
@@ -37,77 +36,66 @@ def plot_SVD_data():
     #plt.show()
     plt.savefig("figures/SVD.png", dpi=300)
 
-def plot_SVD_feature_data():
-    folder = "../data/20240611"
-    segment_type = "outofplane_twist"
-    Ls = np.arange(50, 98.1, 1)
-    logKts = [2.00]
-    logKbs = [2.00]
-    Rfs = np.arange(0.40, 0.601, 0.1)
-    parameters = [[segment_type, L, logKt, logKb, Rf] for L in Ls for logKt in logKts for logKb in logKbs for Rf in Rfs]
+def plot_SVD_feature_data(tex_lw=455.24408, ppi=72):
+    folder = "../data/20240613"
 
-    all_features, all_Sq, all_Sq_rod, all_Delta_Sq, q = read_Sq_data(folder, parameters)
+    fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.3))
+    # for inplane_twist
+    ax11 = fig.add_subplot(131, projection='3d')
+    ax12 = fig.add_subplot(132, projection='3d')
+    ax13 = fig.add_subplot(133, projection='3d')
+    # for outofplane twist
+    #ax21 = fig.add_subplot(234, projection='3d')
+    #ax22 = fig.add_subplot(235, projection='3d')
+    #ax23 = fig.add_subplot(236, projection='3d')
 
-    svd = np.linalg.svd(all_Delta_Sq)
+    features = ["L", "Rf", "Rg"]
+    features_tex = [r"$L$", r"$R_f$", r"$R_g$"]
 
-    ppi = 72
-    fig = plt.figure(figsize=(246 / ppi * 1.7, 246 / ppi * 0.5))
+    for segment_type in ["outofplane_twist"]:
+        if (segment_type == "outofplane_twist"):
+            axs = [ax11, ax12, ax13]
+        #elif (segment_type == "outofplane_twist"):
+        #    axs = [ax21, ax22, ax23]
 
-    #axs00 = fig.add_subplot(221)
-    axs01 = fig.add_subplot(131, projection='3d')
-    axs10 = fig.add_subplot(132, projection='3d')
-    axs11 = fig.add_subplot(133, projection='3d')
-    '''
-    axs00.plot(range(len(svd.S)), svd.S, "x", markersize=5, markerfacecolor='none', label=r"$\Sigma$")
-    axs00.plot(range(len(svd.S))[:3], svd.S[:3], "ro", markersize=5, markerfacecolor='none')
-    axs00.set_xlabel("SVR", fontsize=9)
-    axs00.set_ylabel(r"$\Sigma$", fontsize=9)
-    axs00.tick_params(labelsize=6)
-    axs00.xaxis.set_major_locator(plt.MultipleLocator(20))
-    axs00.xaxis.set_minor_locator(plt.MultipleLocator(10))
+        # plot the svd distribution
+        data = np.loadtxt(f"{folder}/data_{segment_type}_svd_projection.txt", skiprows=1, delimiter=",", unpack=True)
+        L, Kt, Kb, Rf, Rg, sqv0, sqv1, sqv2 = data
+        feature_data = {"L": L, "Rf": Rf, "Rg": Rg}
+        for i in range(len(features)):
+            mu = features[i]
+            ax = axs[i]
+            scatter = ax.scatter(sqv0, sqv1, sqv2, s=1, c=feature_data[mu], cmap="jet_r")
 
-    '''
+            ax.set_xlabel("V0", fontsize=10, labelpad=-12, rotation=0)
+            ax.set_ylabel("V1", fontsize=10, labelpad=-7, rotation=0)
+            ax.set_zlabel("V2", fontsize=10, labelpad=-5, rotation=0)
+            #ax.tick_params(labelsize=7, pad=0)
+            ax.tick_params("x",labelsize=7,pad=-7)
+            ax.tick_params("y",labelsize=7,pad=-5)
+            ax.tick_params("z",labelsize=7,pad=-0.5)
 
-    L, Kt, Kb, Rf, Rg, sqv0, sqv1, sqv2 = np.loadtxt(f"{folder}/data_{segment_type}_svd_projection.txt", skiprows=1, delimiter=",", unpack=True)
+            #ax.set_title(features_tex[i])
+            cbar = fig.colorbar(scatter, ax=ax, fraction=0.03, pad=0.01)
+            cbar.ax.tick_params(labelsize=7)
+            #cbar.xaxis.set_major_locator(plt.MultipleLocator(0.5))
+            #cbar.xaxis.set_minor_locator(plt.MultipleLocator(0.25))
+            cbar.ax.set_title(features_tex[i], fontsize=10)
 
-    scatter01 = axs01.scatter(sqv0, sqv1, sqv2, s=1, c=L, cmap="jet_r")
-    axs01.tick_params(labelsize=5)
+            #cbar = .colorbar(axs.collections[0])
+            #cbar.set_label(mu, fontsize=9)
+            ax.xaxis.set_major_locator(plt.MultipleLocator(0.5))
+            ax.xaxis.set_minor_locator(plt.MultipleLocator(0.25))
+            ax.yaxis.set_major_locator(plt.MultipleLocator(0.5))
+            ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
+            ax.zaxis.set_major_locator(plt.MultipleLocator(0.4))
+            ax.zaxis.set_minor_locator(plt.MultipleLocator(0.2))
+            ax.grid(True, which='minor')
 
-    colorbar01 = fig.colorbar(scatter01, ax=axs01, fraction=0.04, pad=0.01)
-    colorbar01.ax.set_title('L',fontsize=8)
-    colorbar01.ax.tick_params(labelsize=5)
-
-    scatter10 = axs10.scatter(sqv0, sqv1, sqv2, s=1, c=Rf, cmap="jet_r")
-    colorbar10 = fig.colorbar(scatter10, ax=axs10, ticks=[0.4, 0.45, 0.5, 0.55,0.6], fraction=0.04, pad=0.01)
-    colorbar10.ax.set_title('Rf',fontsize=8)
-    colorbar10.ax.tick_params(labelsize=5)
-
-    scatter11 = axs11.scatter(sqv0, sqv1, sqv2, s=1, c=Rg, cmap="jet_r")
-    colorbar11 = fig.colorbar(scatter11, ax=axs11, fraction=0.04, pad=0.01)
-    colorbar11.ax.set_title('Rg',fontsize=8)
-    colorbar11.ax.tick_params(labelsize=5)
-
-    for ax in [axs01, axs10, axs11]:
-        ax.view_init(elev=16., azim=-110)
-        ax.set_xlabel("V0", fontsize=8, labelpad=-12)
-        ax.set_ylabel("V1", fontsize=8, labelpad=-7)
-        ax.zaxis.set_major_locator(plt.MultipleLocator(0.05))
-        ax.set_zlabel("V2", fontsize=8, labelpad=-5)
-        ax.tick_params("x",labelsize=6,pad=-7)
-        ax.tick_params("y",labelsize=6,pad=-5)
-        ax.tick_params("z",labelsize=6,pad=-0.5)
-        ax.set_box_aspect([1, 1, 0.8])
-
-        ax.xaxis.set_major_locator(plt.MultipleLocator(0.1))
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
-        ax.yaxis.set_major_locator(plt.MultipleLocator(0.5))
-        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
-        ax.zaxis.set_major_locator(plt.MultipleLocator(0.05))
-        ax.zaxis.set_minor_locator(plt.MultipleLocator(0.025))
-        ax.grid(True, which='minor')
+            ax.view_init(elev=16., azim=-110)
 
     plt.tight_layout(pad=1.5)
+    #plt.tight_layout(pad=0.05)
     #plt.show()
-    plt.savefig("figures/SVD_feature.png", dpi=300)
-
+    plt.savefig("figures/SVD_feature.pdf", format="pdf", dpi=300)
     plt.close()

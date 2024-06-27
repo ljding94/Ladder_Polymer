@@ -62,12 +62,15 @@ public:
     // eternal parameters
     std::string segment_type; // segment type
     double beta; // system temperature
-    int L;       // length, number of segments
+    //int L;       // length, number of segments
+
+    double Lmu; // average of L distribution
+    double Lsig; // standard diviation of L distribution
+
     Energy_parameter Epar;
     double Rf; // flip rate
     std::vector<segment> polymer; // the polymer
     //observable obs; // obserrable
-
 
     // randomnumber generators
     std::mt19937 gen;
@@ -77,7 +80,7 @@ public:
     std::vector<double> rand_uni_vec(); // generate a random unit vector
 
     // initialization
-    biaxial_polymer(std::string segment_type_, double beta_, int L_, Energy_parameter Epar_, double Rf_);
+    biaxial_polymer(std::string segment_type_, double beta_, double Lmu_, double Lsig_, Energy_parameter Epar_, double Rf_, bool rand_param = false);
     // for direct sampling
 
     // check self-avoid condition

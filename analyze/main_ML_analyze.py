@@ -4,6 +4,7 @@ from process_analyze import *
 import numpy as np
 from ML_analysis import *
 import sys
+import random
 
 
 def main():
@@ -21,8 +22,14 @@ def main():
         print("analyzing parameters", parameters)
         plot_svd(folder, parameters, all_feature_names)
         plot_pddf_acf(folder, parameters, all_feature_names)
-        GaussianProcess_optimization(folder, parameters, all_feature_names)
-        GaussianProcess_prediction(folder, parameters, all_feature_names)
+
+        random.shuffle(parameters)
+        parameters_train = parameters[:int(0.7*len(parameters))]
+        parameters_test = parameters[int(0.7*len(parameters)):]
+
+        all_feature_mean, all_feature_std, all_gp_per_feature = GaussianProcess_optimization(folder, parameters_train, all_feature_names)
+        GaussianProcess_prediction(folder, parameters_test, all_feature_names, all_feature_mean, all_feature_std, all_gp_per_feature)
+
 
     else:
         print("hello!")
@@ -33,7 +40,7 @@ def main():
         segment_type = "inplane_twist"
         #segment_type = "outofplane_twist"
         # L = 200
-        Ls = np.arange(50, 109.1, 1)
+        Ls = np.arange(50, 99.1, 1)
         # Kbs = np.array([1.0, 10.0, 100.0, 1000.0, 10000.0])
         logKts = [1.50]  # np.arange(0.00, 3.001, 0.10)
         logKbs = [1.50]
@@ -49,8 +56,15 @@ def main():
 
         #plot_svd(folder, parameters, all_feature_names)
         #plot_pddf_acf(folder, parameters, all_feature_names)
-        #GaussianProcess_optimization(folder, parameters, all_feature_names)
-        GaussianProcess_prediction(folder, parameters, all_feature_names)
+
+        random.shuffle(parameters)
+        parameters_train = parameters[:int(0.7*len(parameters))]
+        parameters_test = parameters[int(0.7*len(parameters)):]
+
+        all_feature_mean, all_feature_std, all_gp_per_feature = GaussianProcess_optimization(folder, parameters_train, all_feature_names)
+        GaussianProcess_prediction(folder, parameters_test, all_feature_names, all_feature_mean, all_feature_std, all_gp_per_feature)
+
+
 
 
 if __name__ == "__main__":
