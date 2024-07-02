@@ -4,7 +4,7 @@
 #include <random>
 #include <vector>
 #include <fstream>
-//#define PI 3.14159265358979323846
+// #define PI 3.14159265358979323846
 
 // initialization
 biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double Lmu_, double Lsig_, Energy_parameter Epar_, double Rf_, bool rand_param)
@@ -30,20 +30,22 @@ biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double
     rand_uni = rand_uni_set;
     rand_norm = rand_norm_set;
 
-    if(rand_param){
+    if (rand_param)
+    {
         // randomize parameters Lmu, Lsig etc
-        Lmu = 50+ 250*rand_uni(gen);
-        Lsig = 5 + 15*rand_uni(gen);
-        Epar.Kt = std::pow(10, 0+2*rand_uni(gen));
-        Epar.Kb = std::pow(10, 0+2*rand_uni(gen));
-        Rf = 0.3 + 0.4*rand_uni(gen);
+        Lmu = 50 + 250 * rand_uni(gen);
+        Lsig = 5 + 15 * rand_uni(gen);
+        Epar.Kt = std::pow(10, 0 + 3 * rand_uni(gen));
+        Epar.Kb = std::pow(10, 0 + 3 * rand_uni(gen));
+        Rf = 0.3 + 0.4 * rand_uni(gen);
     }
+    std::cout << "setting system param:" << "Lmu:" << Lmu << ", Lsig:" << Lsig << ", Kt:" << Epar.Kt << ", Kb:" << Epar.Kb << ", Rf:" << Rf << "\n";
 }
 
 inner_structure biaxial_polymer::calc_rand_ut_vt_alpha(std::vector<double> u, std::vector<double> v, double alpha_pre, double Rf)
 {
 
-    inner_structure  inner;
+    inner_structure inner;
     inner.alpha = 0;
     inner.ut = {0, 0, 0};
     inner.vt = {0, 0, 0};
@@ -59,9 +61,9 @@ inner_structure biaxial_polymer::calc_rand_ut_vt_alpha(std::vector<double> u, st
         // 2D canal, 51 degree in plane twist of ut and vt
         double alpha = 51.0 / 180.0 * M_PI; // to-be-determined
         double cos_alpha, sin_alpha;
-        if(rand_uni(gen)<Rf && alpha_pre>0)
+        if (rand_uni(gen) < Rf && alpha_pre > 0)
         {
-            alpha = -alpha;// flip with probability Rf
+            alpha = -alpha; // flip with probability Rf
         }
         inner.alpha = alpha;
 
@@ -69,19 +71,18 @@ inner_structure biaxial_polymer::calc_rand_ut_vt_alpha(std::vector<double> u, st
         sin_alpha = std::sin(alpha);
         for (int k = 0; k < 3; k++)
         {
-            inner.ut[k] = u[k]*cos_alpha + v[k]*sin_alpha;
-            inner.vt[k] = -u[k]*sin_alpha + v[k]*cos_alpha;
+            inner.ut[k] = u[k] * cos_alpha + v[k] * sin_alpha;
+            inner.vt[k] = -u[k] * sin_alpha + v[k] * cos_alpha;
         }
-
     }
     else if (segment_type == "outofplane_twist")
     {
         // 2D canal, 51 degree out of plane twist of ut and vt
         double alpha = 51.0 / 180.0 * M_PI;
         double cos_alpha, sin_alpha;
-        if(rand_uni(gen)<Rf && alpha_pre>0)
+        if (rand_uni(gen) < Rf && alpha_pre > 0)
         {
-            alpha = -alpha;// flip with probability Rf
+            alpha = -alpha; // flip with probability Rf
         }
         inner.alpha = alpha;
 
@@ -93,14 +94,14 @@ inner_structure biaxial_polymer::calc_rand_ut_vt_alpha(std::vector<double> u, st
         throw std::runtime_error("Invalid polymer type");
     }
     // just to test in case there is an error
-    if(std::abs(inner_product(inner.ut, inner.vt))>1e-5)
-        {
-            throw std::runtime_error("ut and vt are not orthogonal");
-        }
-        if(std::abs(inner_product(u,v))>1e-5)
-        {
-            throw std::runtime_error("u and v are not parallel");
-        }
+    if (std::abs(inner_product(inner.ut, inner.vt)) > 1e-5)
+    {
+        throw std::runtime_error("ut and vt are not orthogonal");
+    }
+    if (std::abs(inner_product(u, v)) > 1e-5)
+    {
+        throw std::runtime_error("u and v are not parallel");
+    }
 
     return inner;
 }
@@ -112,7 +113,7 @@ void biaxial_polymer::reset_polymer()
     {
         polymer[i].phi = 0;
         polymer[i].theta = 0;
-        polymer[i].R = {0, 0, 1.0*i};
+        polymer[i].R = {0, 0, 1.0 * i};
         polymer[i].u = {0, 0, 1};
         polymer[i].v = {1, 0, 0};
         polymer[i].ut = {0, 0, 1};
@@ -124,9 +125,9 @@ void biaxial_polymer::reset_polymer()
         else if (segment_type == "flat")
         {
             polymer[i].scattering_points = {{0, -0.5}, {0, 0.5}, {0.5, -0.5}, {0.5, 0.5}};
-            //polymer[i].scattering_points = {{0, -1}, {0, 1}, {0.5, -1}, {0.5, 1}};
-            //polymer[i].scattering_points = {{0, -5}, {0, 5}, {0.5, -5}, {0.5, 5}};
-            //polymer[i].scattering_points = {{0, 0}};
+            // polymer[i].scattering_points = {{0, -1}, {0, 1}, {0.5, -1}, {0.5, 1}};
+            // polymer[i].scattering_points = {{0, -5}, {0, 5}, {0.5, -5}, {0.5, 5}};
+            // polymer[i].scattering_points = {{0, 0}};
         }
         else if (segment_type == "inplane_twist")
         {
@@ -159,17 +160,19 @@ void biaxial_polymer::generate_polymer()
 {
     // determine the length of the polymer
     int L;
-    do{
+    do
+    {
         L = int(rand_norm(gen) * Lsig + Lmu);
-    }while(L<1);
+    } while (L < 1);
     polymer.resize(L);
-    //std::cout<<"generating polymer with length L="<<L<<"\n";
+    // std::cout<<"generating polymer with length L="<<L<<"\n";
 
     // generate the direction of first segment randomly
     polymer[0].u = rand_uni_vec();
-    do{
+    do
+    {
         polymer[0].v = rand_uni_vec();
-    } while(std::abs(inner_product(polymer[0].u,polymer[0].v)-1) < 1e-5); // avoid the case that u and v are parallel
+    } while (std::abs(inner_product(polymer[0].u, polymer[0].v) - 1) < 1e-5); // avoid the case that u and v are parallel
     // make u and v orthogonal
     polymer[0].v = cross_product(polymer[0].u, polymer[0].v);
     // make v unit vector
@@ -196,43 +199,44 @@ void biaxial_polymer::generate_polymer()
             polymer[i].R[j] = polymer[i - 1].R[j] + polymer[i - 1].u[j];
         }
         trial = 0;
-        do{
-        total_trial++;
-        trial++;
-        phi = rand_norm(gen) / std::sqrt(beta * Epar.Kt);   // sqrt(beta Kt) * phi ~ N(0,1)
-        theta = rand_norm(gen) / std::sqrt(beta * Epar.Kb); // sqrt(beta Kb) * theta ~ N(0,1)
+        do
+        {
+            total_trial++;
+            trial++;
+            phi = rand_norm(gen) / std::sqrt(beta * Epar.Kt);   // sqrt(beta Kt) * phi ~ N(0,1)
+            theta = rand_norm(gen) / std::sqrt(beta * Epar.Kb); // sqrt(beta Kb) * theta ~ N(0,1)
 
-        polymer[i].phi = phi;
-        polymer[i].theta = theta;
+            polymer[i].phi = phi;
+            polymer[i].theta = theta;
 
-        // note R is the head of the segment, not center
+            // note R is the head of the segment, not center
 
-        // update u and v
-        // 1. polymer[i] rorate around polymer[i-1].u by phi
-        // 2. polymer[i] rorate around polymer[i].v by theta, (for simplicity)
-        // use Rodrigues' rotation formula
+            // update u and v
+            // 1. polymer[i] rorate around polymer[i-1].u by phi
+            // 2. polymer[i] rorate around polymer[i].v by theta, (for simplicity)
+            // use Rodrigues' rotation formula
 
-        // rotate by phi, from vt and ut
-        polymer[i].u = polymer[i - 1].ut; // u unchanged
-        polymer[i].v = Rodrigues_rotation(polymer[i - 1].vt, polymer[i - 1].ut, phi);
+            // rotate by phi, from vt and ut
+            polymer[i].u = polymer[i - 1].ut; // u unchanged
+            polymer[i].v = Rodrigues_rotation(polymer[i - 1].vt, polymer[i - 1].ut, phi);
 
-        // rotate by theta
-        polymer[i].u = Rodrigues_rotation(polymer[i].u, polymer[i].v, theta);
-        // v unchanged
+            // rotate by theta
+            polymer[i].u = Rodrigues_rotation(polymer[i].u, polymer[i].v, theta);
+            // v unchanged
 
-        } while(!satisfy_self_avoiding_condition(i) && trial<1e3);
-        if(trial>=1e3)
+        } while (!satisfy_self_avoiding_condition(i) && trial < 1e3);
+        if (trial >= 1e3)
         {
             // too many failed trial, seems stuck in one place, start over from half of it's place
-            i/=2;
+            i /= 2;
         }
         // accepted, also update ut and vt
-        inner_structure inner = calc_rand_ut_vt_alpha(polymer[i].u, polymer[i].v, polymer[i-1].alpha, Rf);
+        inner_structure inner = calc_rand_ut_vt_alpha(polymer[i].u, polymer[i].v, polymer[i - 1].alpha, Rf);
         polymer[i].alpha = inner.alpha;
         polymer[i].ut = inner.ut;
         polymer[i].vt = inner.vt;
     }
-    //std::cout<<"polymer generation accepted rate: " <<(L-1)/total_trial <<std::endl;
+    // std::cout<<"polymer generation accepted rate: " <<(L-1)/total_trial <<std::endl;
 }
 
 void biaxial_polymer::save_polymer_to_file(std::string filename)
@@ -246,13 +250,10 @@ void biaxial_polymer::save_polymer_to_file(std::string filename)
         {
             f << polymer[i].phi << "," << polymer[i].theta << "," << polymer[i].R[0] << "," << polymer[i].R[1] << "," << polymer[i].R[2] << "," << polymer[i].u[0] << "," << polymer[i].u[1] << "," << polymer[i].u[2] << "," << polymer[i].v[0] << "," << polymer[i].v[1] << "," << polymer[i].v[2] << "," << polymer[i].alpha << "," << polymer[i].ut[0] << "," << polymer[i].ut[1] << "," << polymer[i].ut[2] << "," << polymer[i].vt[0] << "," << polymer[i].vt[1] << "," << polymer[i].vt[2] << "\n";
         }
-
     }
     f.close();
 
 } // end save_polymer_to_file
-
-
 
 void biaxial_polymer::save_observable_to_file(std::string filename, std::vector<observable> obs_ensemble, bool save_detail)
 {
@@ -266,13 +267,16 @@ void biaxial_polymer::save_observable_to_file(std::string filename, std::vector<
         f << "Kb=" << Epar.Kb << "\n";
 
         int number_of_polymer = obs_ensemble.size();
-        if(save_detail) {
+        if (save_detail)
+        {
             f << "index,E,Tot_phi,Tot_theta\n";
             for (int i = 0; i < number_of_polymer; i++)
             {
                 f << i << "," << obs_ensemble[i].E << "," << obs_ensemble[i].Tot_phi << "," << obs_ensemble[i].Tot_theta << "\n";
             }
-        } else {
+        }
+        else
+        {
             // find stats
             // calculate average and standard deviation of E
             double avg_E = 0.0;
@@ -304,7 +308,7 @@ void biaxial_polymer::save_observable_to_file(std::string filename, std::vector<
             // write stats to the file
             f << "stats,E,Tot_phi,Tot_theta,gr_array\n";
             f << "mean," << avg_E << "," << avg_Tot_phi << "," << avg_Tot_theta << "\n";
-            f<<"std_dev," << std_dev_E << "," << std_dev_Tot_phi << "," << std_dev_Tot_theta << "\n";
+            f << "std_dev," << std_dev_E << "," << std_dev_Tot_phi << "," << std_dev_Tot_theta << "\n";
         }
     }
     f.close();
@@ -316,32 +320,36 @@ void biaxial_polymer::save_distribution_function_to_file(std::string filename, s
     std::vector<double> t;
     // distribution func(t) will be save to filename
     // read distribution func to save based on component passed in
-    if(component=="gr") {
+    if (component == "gr")
+    {
         t = obs_ensemble[0].r;
-        for (int i = 0; i <obs_ensemble.size(); i++)
+        for (int i = 0; i < obs_ensemble.size(); i++)
         {
             func.push_back(obs_ensemble[i].gr);
-
         }
-    } else if (component == "SqB") {
+    }
+    else if (component == "SqB")
+    {
         t = obs_ensemble[0].qB;
-        for (int i = 0; i <obs_ensemble.size(); i++)
+        for (int i = 0; i < obs_ensemble.size(); i++)
         {
             func.push_back(obs_ensemble[i].SqB);
         }
-    } else {
+    }
+    else
+    {
         throw std::runtime_error("Invalid component type");
     }
 
     // get Rg statistics
     double avg_Rg = 0.0;
     double std_dev_Rg = 0.0;
-    for (int i = 0; i <obs_ensemble.size(); i++)
+    for (int i = 0; i < obs_ensemble.size(); i++)
     {
         avg_Rg += obs_ensemble[i].Rg;
     }
     avg_Rg /= obs_ensemble.size();
-    for (int i = 0; i <obs_ensemble.size(); i++)
+    for (int i = 0; i < obs_ensemble.size(); i++)
     {
         std_dev_Rg += (obs_ensemble[i].Rg - avg_Rg) * (obs_ensemble[i].Rg - avg_Rg);
     }
@@ -352,7 +360,8 @@ void biaxial_polymer::save_distribution_function_to_file(std::string filename, s
     if (f.is_open())
     {
 
-        if(save_detail) {
+        if (save_detail)
+        {
             f << "beta=" << beta << "\n";
             f << "Lmu=" << Lmu << "\n";
             f << "Lsig=" << Lsig << "\n";
@@ -362,18 +371,20 @@ void biaxial_polymer::save_distribution_function_to_file(std::string filename, s
             for (int i = 0; i < func.size(); i++)
             {
                 f << i;
-                for(int j=0;j<func[i].size();j++)
+                for (int j = 0; j < func[i].size(); j++)
                 {
-                    f << "," << func[i][j] ;
+                    f << "," << func[i][j];
                 }
-                f <<"\n";
+                f << "\n";
             }
-        } else {
+        }
+        else
+        {
             // find stats
             // calculate average and standard deviation of gr
             std::vector<double> avg_func(func[0].size(), 0.0);
             std::vector<double> std_dev_func(func[0].size(), 0.0);
-            for(int j = 0; j < func[0].size(); j++) // every bin or point
+            for (int j = 0; j < func[0].size(); j++) // every bin or point
             {
                 for (int i = 0; i < func.size(); i++)
                 {
@@ -387,36 +398,35 @@ void biaxial_polymer::save_distribution_function_to_file(std::string filename, s
                 std_dev_func[j] = std::sqrt(std_dev_func[j] / func.size());
             }
             // write stats to the file
-            f << "stats,segment_type,Lmu,Lsig,Kt,Kb,Rf,Rg,"  + component + "_array\n";
-            f << "mean" << "," << segment_type << "," << Lmu << ","  << Lsig << "," << Epar.Kt << "," << Epar.Kb << "," << Rf << "," << avg_Rg;
-            for(int j=0;j<avg_func.size();j++)
+            f << "stats,segment_type,Lmu,Lsig,Kt,Kb,Rf,Rg," + component + "_array\n";
+            f << "mean" << "," << segment_type << "," << Lmu << "," << Lsig << "," << Epar.Kt << "," << Epar.Kb << "," << Rf << "," << avg_Rg;
+            for (int j = 0; j < avg_func.size(); j++)
             {
-                    f<< "," << avg_func[j] ;
+                f << "," << avg_func[j];
             }
-            f<<"\nstd_dev/sqrt(number of polymer)"<<",NA, NA, NA, NA, NA, NA, NA" << std_dev_Rg/std::sqrt(obs_ensemble.size());
-            for(int j=0;j<std_dev_func.size();j++)
+            f << "\nstd_dev/sqrt(number of polymer)" << ",NA, NA, NA, NA, NA, NA, NA" << std_dev_Rg / std::sqrt(obs_ensemble.size());
+            for (int j = 0; j < std_dev_func.size(); j++)
             {
-                    f<< "," << std_dev_func[j]/std::sqrt(func.size()) ;
+                f << "," << std_dev_func[j] / std::sqrt(func.size());
             }
         }
-        f << "\nr or qB "<< ",NA, NA, NA, NA, NA, NA, NA";
+        f << "\nr or qB " << ",NA, NA, NA, NA, NA, NA, NA";
         for (int i = 0; i < t.size(); i++)
         {
-            f << "," << t[i] ;
+            f << "," << t[i];
         }
-        if(component=="SqB") {
+        if (component == "SqB")
+        {
             f << "\n SqB rod, NA, NA, NA, NA, NA, NA, NA";
             std::vector<double> SqB_rod = calc_rod_structure_factor(t);
             for (int i = 0; i < SqB_rod.size(); i++)
             {
-                f << "," << SqB_rod[i] ;
+                f << "," << SqB_rod[i];
             }
         }
-
     }
     f.close();
 }
-
 
 void biaxial_polymer::generate_and_save_polymer_ensemble(int number_of_polymer, int bin_num, std::string filename, bool save_detail)
 {
@@ -429,18 +439,18 @@ void biaxial_polymer::generate_and_save_polymer_ensemble(int number_of_polymer, 
         generate_polymer();
         obs_ensemble.push_back(measure_observable(bin_num));
 
-        if( int((i + 1)*100.0/number_of_polymer) > current_progress+10)
+        if (int((i + 1) * 100.0 / number_of_polymer) > current_progress + 10)
         {
-            current_progress = int((i + 1)*100.0/number_of_polymer);
+            current_progress = int((i + 1) * 100.0 / number_of_polymer);
             std::cout << "Progress: " << current_progress << "\%" << "\n";
         }
     }
 
-    //std::string obs_filename = filename.substr(0, filename.find_last_of(".")) + "_obs.csv";
-    //save_observable_to_file(filename, obs_ensemble, save_detail);
+    // std::string obs_filename = filename.substr(0, filename.find_last_of(".")) + "_obs.csv";
+    // save_observable_to_file(filename, obs_ensemble, save_detail);
 
-    //std::string gr_filename = filename.substr(0, filename.find_last_of(".")) + "_gr.csv";
-    //save_distribution_function_to_file(gr_filename, "gr", obs_ensemble, save_detail);
+    // std::string gr_filename = filename.substr(0, filename.find_last_of(".")) + "_gr.csv";
+    // save_distribution_function_to_file(gr_filename, "gr", obs_ensemble, save_detail);
 
     std::string Sq_filename = filename.substr(0, filename.find_last_of(".")) + "_SqB.csv";
     save_distribution_function_to_file(Sq_filename, "SqB", obs_ensemble, save_detail);
@@ -453,8 +463,9 @@ observable biaxial_polymer::measure_observable(int bin_num)
     obs.E = 0;
     obs.Tot_phi = 0;
     obs.Tot_theta = 0;
-    for(int i=0;i<size(polymer);i++){
-        obs.E += 0.5*Epar.Kt * polymer[i].phi*polymer[i].phi + 0.5*Epar.Kb*polymer[i].theta*polymer[i].theta;
+    for (int i = 0; i < size(polymer); i++)
+    {
+        obs.E += 0.5 * Epar.Kt * polymer[i].phi * polymer[i].phi + 0.5 * Epar.Kb * polymer[i].theta * polymer[i].theta;
         obs.Tot_phi += polymer[i].phi;
         obs.Tot_theta += polymer[i].theta;
     }
@@ -467,12 +478,13 @@ observable biaxial_polymer::measure_observable(int bin_num)
     */
     obs.Rg = calc_radius_of_gyration();
 
-    double qB_i = 1e-4; // 0.2*M_PI/L; //0.1/L; ;
-    double qB_f = 1; //M_PI;//100.0/L; //M_PI;
+    double qB_i = 1e-4;  // 0.2*M_PI/L; //0.1/L; ;
+    double qB_f = 10;    // M_PI;//100.0/L; //M_PI;
     obs.SqB = calc_structure_factor(qB_i, qB_f, bin_num);
-    obs.qB = std::vector<double>(bin_num,0);
-    for (int k = 0; k < bin_num; k++) {
-        obs.qB[k] = qB_i * std::pow(qB_f/qB_i, 1.0*k/(bin_num-1)); // uniform in log scale
+    obs.qB = std::vector<double>(bin_num, 0);
+    for (int k = 0; k < bin_num; k++)
+    {
+        obs.qB[k] = qB_i * std::pow(qB_f / qB_i, 1.0 * k / (bin_num - 1)); // uniform in log scale
     }
     return obs;
 }
@@ -490,8 +502,8 @@ std::vector<double> biaxial_polymer::calc_pair_dsitribution_function(double r_i,
     {
         for (int j = i + 1; j < L; j++)
         {
-            r = std::sqrt(std::pow(polymer[i].R[0]-polymer[j].R[0],2)+std::pow(polymer[i].R[1]-polymer[j].R[1],2)+std::pow(polymer[i].R[2]-polymer[j].R[2],2));
-            bin = int( (r-r_i) / delta_r);
+            r = std::sqrt(std::pow(polymer[i].R[0] - polymer[j].R[0], 2) + std::pow(polymer[i].R[1] - polymer[j].R[1], 2) + std::pow(polymer[i].R[2] - polymer[j].R[2], 2));
+            bin = int((r - r_i) / delta_r);
             if (bin < bin_num)
             {
                 gr[bin] += 2.0 / L;
@@ -508,36 +520,41 @@ std::vector<double> biaxial_polymer::calc_structure_factor(double qB_i, double q
     double q;
 
     std::vector<std::vector<double>> R_all{}; // all scattering point's R[axis] value, including all scattering points in each segment
-    std::vector<double> R_scatter{0,0,0};
+    std::vector<double> R_scatter{0, 0, 0};
 
-    for(int i=0;i<size(polymer);i++){
-        for(int j=0;j<polymer[i].scattering_points.size();j++){
-            for(int k=0;k<3;k++){
-                R_scatter[k] = polymer[i].R[k]+polymer[i].scattering_points[j][0]*polymer[i].u[k]+polymer[i].scattering_points[j][1]*polymer[i].v[k];
+    for (int i = 0; i < size(polymer); i++)
+    {
+        for (int j = 0; j < polymer[i].scattering_points.size(); j++)
+        {
+            for (int k = 0; k < 3; k++)
+            {
+                R_scatter[k] = polymer[i].R[k] + polymer[i].scattering_points[j][0] * polymer[i].u[k] + polymer[i].scattering_points[j][1] * polymer[i].v[k];
             }
             R_all.push_back(R_scatter);
         }
     }
     int N = R_all.size(); // total number of scattering points
-    double r; // for storating distance between two scattering points
+    double r;             // for storating distance between two scattering points
     std::vector<double> all_qB{};
-    for(int k=0;k<bin_num;k++){
-        all_qB.push_back(qB_i * std::pow(qB_f/qB_i, 1.0*k/(bin_num-1))); // uniform in log scale
+    for (int k = 0; k < bin_num; k++)
+    {
+        all_qB.push_back(qB_i * std::pow(qB_f / qB_i, 1.0 * k / (bin_num - 1))); // uniform in log scale
     }
-    //std::cout<< "N:"<<N<<std::endl;
-    std::vector<double> SqB(bin_num, 1.0/N); // initialize with 1 due to self overlaping term (see S.H. Chen 1986 eq 18)
+    // std::cout<< "N:"<<N<<std::endl;
+    std::vector<double> SqB(bin_num, 1.0 / N); // initialize with 1 due to self overlaping term (see S.H. Chen 1986 eq 18)
     for (int i = 0; i < N - 1; i++)
     {
         for (int j = i + 1; j < N; j++)
         {
-            r = std::sqrt(std::pow(R_all[i][0]-R_all[j][0],2)+std::pow(R_all[i][1]-R_all[j][1],2)+std::pow(R_all[i][2]-R_all[j][2],2));
+            r = std::sqrt(std::pow(R_all[i][0] - R_all[j][0], 2) + std::pow(R_all[i][1] - R_all[j][1], 2) + std::pow(R_all[i][2] - R_all[j][2], 2));
             // calculate S_q
-            for(int k=0;k<bin_num;k++){
-                q = all_qB[k]; // B = 1
-                SqB[k] += 2.0/N/N * std::sin(q*r)/(q*r); // normalize to 1 at q=0
+            for (int k = 0; k < bin_num; k++)
+            {
+                q = all_qB[k];                                     // B = 1
+                SqB[k] += 2.0 / N / N * std::sin(q * r) / (q * r); // normalize to 1 at q=0
             }
         }
-        //std::cout<<"Progress: " << k << "/" << bin_num <<  "\r";
+        // std::cout<<"Progress: " << k << "/" << bin_num <<  "\r";
     }
     return SqB;
 }
@@ -549,7 +566,7 @@ double biaxial_polymer::calc_radius_of_gyration()
     double Rg = 0;
     // find center of mass
     double x_c = 0, y_c = 0, z_c = 0;
-    for(int i=0; i< L;i ++)
+    for (int i = 0; i < L; i++)
     {
         x_c = x_c + polymer[i].R[0];
         y_c = y_c + polymer[i].R[1];
@@ -562,32 +579,30 @@ double biaxial_polymer::calc_radius_of_gyration()
     // calculate Rg
     for (int i = 0; i < L; i++)
     {
-        Rg += std::pow(polymer[i].R[0]-x_c, 2) + std::pow(polymer[i].R[1]-y_c, 2) + std::pow(polymer[i].R[2]-z_c, 2);
+        Rg += std::pow(polymer[i].R[0] - x_c, 2) + std::pow(polymer[i].R[1] - y_c, 2) + std::pow(polymer[i].R[2] - z_c, 2);
     }
     Rg = std::sqrt(Rg / L);
     return Rg;
-
 }
-
 
 #pragma region : useful tools
 std::vector<double> biaxial_polymer::calc_rod_structure_factor(std::vector<double> qB)
 {
     int L = size(polymer);
     // measure structure factor
-    std::vector<double> SqB(qB.size(), 1.0/L); // initialize with 1 due to self overlaping term (see S.H. Chen 1986 eq 18)
+    std::vector<double> SqB(qB.size(), 1.0 / L); // initialize with 1 due to self overlaping term (see S.H. Chen 1986 eq 18)
     for (int i = 0; i < L - 1; i++)
     {
         for (int j = i + 1; j < L; j++)
         {
-            for(int k=0;k<qB.size();k++){
-                SqB[k] += 2.0/L/L * std::sin(qB[k]*(j-i))/(qB[k]*(j-i)); // normalize to 1 at q=0
+            for (int k = 0; k < qB.size(); k++)
+            {
+                SqB[k] += 2.0 / L / L * std::sin(qB[k] * (j - i)) / (qB[k] * (j - i)); // normalize to 1 at q=0
             }
         }
     }
     return SqB;
 }
-
 
 std::vector<double> biaxial_polymer::cross_product(std::vector<double> a, std::vector<double> b)
 {
@@ -615,7 +630,7 @@ std::vector<double> biaxial_polymer::Rodrigues_rotation(std::vector<double> v, s
     std::vector<double> v_rot(3, 0);
     // 1. find (k x v), k cross v and kv, k.v
     std::vector<double> kxv = cross_product(k, v);
-    double kv=inner_product(k,v);
+    double kv = inner_product(k, v);
     // 2. do the calculation
     for (int j = 0; j < 3; j++)
     {
@@ -627,7 +642,8 @@ std::vector<double> biaxial_polymer::Rodrigues_rotation(std::vector<double> v, s
     v_rot[1] /= v_rot_norm;
     v_rot[2] /= v_rot_norm;
 
-    if (std::abs(v_rot[0] * v_rot[0] + v_rot[1] * v_rot[1] + v_rot[2] * v_rot[2] - 1) > 1e-6) {
+    if (std::abs(v_rot[0] * v_rot[0] + v_rot[1] * v_rot[1] + v_rot[2] * v_rot[2] - 1) > 1e-6)
+    {
         printf("v_rot^2=%f\n", v_rot[0] * v_rot[0] + v_rot[1] * v_rot[1] + v_rot[2] * v_rot[2]);
         throw std::runtime_error("Error: v_rot^2 is not 1.");
     }
@@ -635,22 +651,22 @@ std::vector<double> biaxial_polymer::Rodrigues_rotation(std::vector<double> v, s
     return v_rot;
 }
 
-
 std::vector<double> biaxial_polymer::rand_uni_vec()
 {
     // 1. generat random point in unit ball
-    double x,y,z;
-    do{
-    x = 2*rand_uni(gen)-1;
-    y = 2*rand_uni(gen)-1;
-    z = 2*rand_uni(gen)-1;
-    } while(x*x+y*y+z*z>1);
+    double x, y, z;
+    do
+    {
+        x = 2 * rand_uni(gen) - 1;
+        y = 2 * rand_uni(gen) - 1;
+        z = 2 * rand_uni(gen) - 1;
+    } while (x * x + y * y + z * z > 1);
     // 2. normalize
-    double norm = std::sqrt(x*x+y*y+z*z);
-    x/=norm;
-    y/=norm;
-    z/=norm;
-    return {x,y,z};
+    double norm = std::sqrt(x * x + y * y + z * z);
+    x /= norm;
+    y /= norm;
+    z /= norm;
+    return {x, y, z};
 }
 
 #pragma endregion

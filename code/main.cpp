@@ -99,7 +99,7 @@ int main(int argc, char const *argv[])
         // running on cluster
         std::cout << "running on cluster\n";
 
-        folder = "/home/dingl1/Ladder_Polymer/data_Cades/"+today;
+        folder = "/home/dingl1/ladder_polymer/data_Cades/"+today;
         if (!std::filesystem::exists(folder))
         {
             std::cout<< today << " folder not exist\n";
