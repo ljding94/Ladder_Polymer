@@ -439,7 +439,7 @@ void biaxial_polymer::generate_and_save_polymer_ensemble(int number_of_polymer, 
         generate_polymer();
         obs_ensemble.push_back(measure_observable(bin_num));
 
-        if (int((i + 1) * 100.0 / number_of_polymer) > current_progress + 10)
+        if (int((i + 1) * 100.0 / number_of_polymer) > current_progress + 1)
         {
             current_progress = int((i + 1) * 100.0 / number_of_polymer);
             std::cout << "Progress: " << current_progress << "\%" << "\n";
