@@ -1,6 +1,7 @@
 /*
 !code
 code/local_run.sh
+code/*.o
 !analyze
 analyze/__pycache__
 !plot

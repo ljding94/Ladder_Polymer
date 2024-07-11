@@ -479,7 +479,7 @@ observable biaxial_polymer::measure_observable(int bin_num)
     obs.Rg = calc_radius_of_gyration();
 
     double qB_i = 1e-4;  // 0.2*M_PI/L; //0.1/L; ;
-    double qB_f = 10;    // M_PI;//100.0/L; //M_PI;
+    double qB_f = 1e0;    // M_PI;//100.0/L; //M_PI;
     obs.SqB = calc_structure_factor(qB_i, qB_f, bin_num);
     obs.qB = std::vector<double>(bin_num, 0);
     for (int k = 0; k < bin_num; k++)
