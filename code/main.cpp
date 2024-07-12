@@ -47,7 +47,7 @@ int main(int argc, char const *argv[])
             std::cout << "running on local machine\n";
             folder = "../data/scratch_local/" + today;
         } else {
-            number_of_polymer = 1000;
+            number_of_polymer = 500;
             bin_num = 100;
             // running on cluster
             std::cout << "running on cluster\n";
@@ -83,7 +83,7 @@ int main(int argc, char const *argv[])
             std::cout << "running on local machine\n";
             folder = "../data/scratch_local/" + today;
         } else {
-            number_of_polymer = 1000;
+            number_of_polymer = 500;
             bin_num = 100;
             // running on cluster
             std::cout << "running on cluster\n";
