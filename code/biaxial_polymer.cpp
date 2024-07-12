@@ -35,8 +35,8 @@ biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double
         // randomize parameters Lmu, Lsig etc
         Lmu = 50 + 250 * rand_uni(gen);
         Lsig = 5 + 15 * rand_uni(gen);
-        Epar.Kt = std::pow(10, 0 + 3 * rand_uni(gen));
-        Epar.Kb = std::pow(10, 0 + 3 * rand_uni(gen));
+        Epar.Kt = std::pow(10, 0.5 + 2 * rand_uni(gen));
+        Epar.Kb = std::pow(10, 0.5 + 2 * rand_uni(gen));
         Rf = 0.3 + 0.4 * rand_uni(gen);
     }
     std::cout << "setting system param:" << "Lmu:" << Lmu << ", Lsig:" << Lsig << ", Kt:" << Epar.Kt << ", Kb:" << Epar.Kb << ", Rf:" << Rf << "\n";
@@ -191,6 +191,7 @@ void biaxial_polymer::generate_polymer()
     double phi, theta;
     double total_trial = 0;
     double trial;
+    int start_over_count = 0;
     for (int i = 1; i < L; i++) // keep the 0th segment fixed
     {
         // update R, determined by previous segment
@@ -227,8 +228,9 @@ void biaxial_polymer::generate_polymer()
         } while (!satisfy_self_avoiding_condition(i) && trial < 1e3);
         if (trial >= 1e3)
         {
+            start_over_count++;
             // too many failed trial, seems stuck in one place, start over from half of it's place
-            i /= 2;
+            i /= 2*start_over_count; // lower the start over i evry time there is a start over
         }
         // accepted, also update ut and vt
         inner_structure inner = calc_rand_ut_vt_alpha(polymer[i].u, polymer[i].v, polymer[i - 1].alpha, Rf);
