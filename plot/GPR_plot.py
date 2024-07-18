@@ -6,50 +6,57 @@ import matplotlib.pyplot as plt
 
 def plot_GPR_data(tex_lw=455.24408, ppi=72):
 
-    folder = "../data/20240613"
-    segment_type = "outofplane_twist"
+    folder = "../data/20240713_partial"
+    fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.33)) #0.65))
+    ax11 = fig.add_subplot(131)
+    ax12 = fig.add_subplot(132)
+    ax13 = fig.add_subplot(133)
 
-    fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.65))
-    ax11 = fig.add_subplot(231)
-    ax12 = fig.add_subplot(232)
-    ax13 = fig.add_subplot(233)
+    # plot both segment type in same ax
+    # ax21 = fig.add_subplot(234)
+    # ax22 = fig.add_subplot(235)
+    # ax23 = fig.add_subplot(236)
 
-    ax21 = fig.add_subplot(234)
-    ax22 = fig.add_subplot(235)
-    ax23 = fig.add_subplot(236)
-
-    features = ["L", "Rf", "Rg"]
-    features_tex = [r"$L$", r"$R_f$", r"$R_g$"]
-
+    features = ["Lmu", "Rf", "Rg"]
+    features_tex = [r"$L_\mu$", r"$R_f$", r"$R_g$"]
+    segment_type_map = {"outofplane_twist": "2D CANAL", "inplane_twist": "3D CANAL"}
+    axs = [ax11, ax12, ax13]
+    major_locator = [100, 0.1, 4]
+    minor_locator = [25, 0.05, 2]
     for segment_type in ["inplane_twist", "outofplane_twist"]:
         if (segment_type == "inplane_twist"):
-            axs = [ax11, ax12, ax13]
+            # axs = [ax11, ax12, ax13]
+            color = "royalblue"
+            marker = "x"
         elif (segment_type == "outofplane_twist"):
-            axs = [ax21, ax22, ax23]
+            # axs = [ax21, ax22, ax23]
+            color = "tomato"
+            marker = "+"
         for i in range(len(features)):
             mu = features[i]
             ax = axs[i]
             mu, mu_predict, my_predict_err = np.loadtxt(f"{folder}/data_{segment_type}_{mu}_prediction.txt", skiprows=1, delimiter=",", unpack=True)
-            ax.scatter(mu, mu_predict, color="tomato", facecolor="none", marker="o", s=3, label=segment_type)
+            ax.scatter(mu, mu_predict, color=color, marker=marker, s=4, alpha=0.8, lw=0.5, label=segment_type_map[segment_type])
             ax.legend(title=features_tex[i], fontsize=7, frameon=False, loc="upper left", handlelength=0.5, handletextpad=0.5)
             max_min = (np.max(mu)-np.min(mu))
             xlim = [np.min(mu)-0.1*max_min, np.max(mu)+0.1*max_min]
-            ax.plot(xlim, xlim, "k-", linewidth=1, alpha=0.5)
+            ax.plot(xlim, xlim, "k-", linewidth=0.5, alpha=0.5)
             ax.set_xlim(xlim)
             ax.set_ylim(xlim)
-            # ax.xaxis.set_major_locator(plt.MultipleLocator(10))
-            # ax.xaxis.set_minor_locator(plt.MultipleLocator(5))
-            # ax.yaxis.set_major_locator(plt.MultipleLocator(10))
-            # ax.yaxis.set_minor_locator(plt.MultipleLocator(5))
+            ax.xaxis.set_major_locator(plt.MultipleLocator(major_locator[i]))
+            ax.xaxis.set_minor_locator(plt.MultipleLocator(minor_locator[i]))
+            ax.yaxis.set_major_locator(plt.MultipleLocator(major_locator[i]))
+            ax.yaxis.set_minor_locator(plt.MultipleLocator(minor_locator[i]))
+            ax.grid(True, which="both", linestyle="--", linewidth=0.5)
 
     axall = fig.add_subplot(111, frameon=False)
     axall.tick_params(labelcolor='none', which='both', top=False, bottom=False, left=False, right=False)
-    axall.set_xlabel("Monte Carlo References", fontsize=10)
-    axall.set_ylabel("Machine Learning Inversion", fontsize=10)
+    axall.set_xlabel("MC References", fontsize=9)
+    axall.set_ylabel("ML Inversion", fontsize=9)
 
     # add annotation
-    annotation = [r"$\mathbf{(%s)}$" % s for s in ["a", "b", "c", "d", "e", "f"]]
-    for ax in [ax11, ax12, ax13, ax21, ax22, ax23]:
+    annotation = [r"$\mathbf{(%s)}$" % s for s in ["a", "b", "c"]]  # , "d", "e", "f"]]
+    for ax in [ax11, ax12, ax13]:  # , ax21, ax22, ax23]:
         ax.text(0.8, 0.1, annotation.pop(0), fontsize=10, transform=ax.transAxes)
 
     plt.tight_layout(pad=0.05)
@@ -61,7 +68,7 @@ def plot_GPR_data(tex_lw=455.24408, ppi=72):
 # for suplemmentary material
 def plot_PDDF_ACF_LML_data(tex_lw=455.24408, ppi=72):
 
-    folder = "../data/20240613"
+    folder = "../data/20240713_partial"
     fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.5))
     # for inplane twist
     ax11 = fig.add_subplot(241)
@@ -75,8 +82,8 @@ def plot_PDDF_ACF_LML_data(tex_lw=455.24408, ppi=72):
     ax23 = fig.add_subplot(247, sharex=ax13, sharey=ax13)
     ax24 = fig.add_subplot(248, sharex=ax14, sharey=ax14)
 
-    features = ["L", "Rf", "Rg"]
-    features_tex = [r"$L$", r"$R_f$", r"$R_g$"]
+    features = ["Lmu", "Rf", "Rg"]
+    features_tex = [r"$L\mu$", r"$R_f$", r"$R_g$"]
     for segment_type in ["inplane_twist", "outofplane_twist"]:
         if (segment_type == "inplane_twist"):
             axp = ax11
@@ -87,21 +94,23 @@ def plot_PDDF_ACF_LML_data(tex_lw=455.24408, ppi=72):
 
         # plot pddf
         data = np.loadtxt(f"{folder}/data_{segment_type}_pddf_acf.txt", skiprows=1, delimiter=",", unpack=True)
-        z, p_z, acf_L, acf_Kt, acf_Kb, acf_Rf, acf_Rg = data
-        max_z = 7
+        z, p_z, acf_Lmu, acf_Lsig, acf_Lsig_per_Lmu, acf_Kt, acf_Kb, acf_Rf, acf_Rg = data
+        max_z = 50
         nz = np.argmax(z >= max_z)
 
-        axp.plot(z[:nz], p_z[:nz], linewidth=1, label=r"$p(z)$")
-        axp.plot(z[:nz], acf_L[:nz], linewidth=1, label=r"$C_L(z)$")
+        p_z_max = np.max(p_z[:nz])
+        axp.plot(z[:nz], p_z[:nz]/p_z_max, linewidth=1, label=r"$\frac{p(z)}{p_{max}(z)}$")
+        axp.plot(z[:nz], acf_Lmu[:nz], linewidth=1, label=r"$C_{L_\mu}(z)$")
         axp.plot(z[:nz], acf_Rf[:nz], linewidth=1, label=r"$C_{R_f}(z)$")
         axp.plot(z[:nz], acf_Rg[:nz], linewidth=1, label=r"$C_{R_g}(z)$")
         axp.set_xlabel(r"$z$", fontsize=10, labelpad=0)
         axp.set_ylabel(r"$C(z)$", fontsize=10, labelpad=-3)
         axp.tick_params(labelsize=7, which="both", direction="in", top="on", right="on")
+        axp.set_ylim([-1, 1.5])
         # if (segment_type == "inplane_twist"):
         # axp.set_xlabel(None)
         # axp.tick_params(labelbottom=False, labelleft=True)
-        axp.legend(fontsize=7, frameon=False, ncol=2, columnspacing=0.5, handlelength=0.5, handletextpad=0.5)
+        axp.legend(fontsize=7, frameon=False, ncol=2, columnspacing=0.2, handlelength=0.5, handletextpad=0.5)
 
         # plot log marginal likelihood contour
         for i in range(len(features)):

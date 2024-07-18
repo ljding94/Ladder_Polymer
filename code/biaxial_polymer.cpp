@@ -316,6 +316,7 @@ void biaxial_polymer::save_observable_to_file(std::string filename, std::vector<
     f.close();
 }
 
+
 void biaxial_polymer::save_distribution_function_to_file(std::string filename, std::string component, std::vector<observable> obs_ensemble, bool save_detail)
 {
     std::vector<std::vector<double>> func;
@@ -430,6 +431,56 @@ void biaxial_polymer::save_distribution_function_to_file(std::string filename, s
     f.close();
 }
 
+void biaxial_polymer::save_L_weighted_Sq_to_file(std::string filename, std::vector<observable> obs_ensemble){
+    std::ofstream f(filename);
+    if (f.is_open())
+    {
+            // get Rg statistics
+        double avg_Rg = 0.0;
+        double std_dev_Rg = 0.0;
+        for (int i = 0; i < obs_ensemble.size(); i++)
+        {
+            avg_Rg += obs_ensemble[i].Rg;
+        }
+        avg_Rg /= obs_ensemble.size();
+        for (int i = 0; i < obs_ensemble.size(); i++)
+        {
+            std_dev_Rg += (obs_ensemble[i].Rg - avg_Rg) * (obs_ensemble[i].Rg - avg_Rg);
+        }
+        std_dev_Rg = std::sqrt(std_dev_Rg / obs_ensemble.size());
+
+        // find stats
+        // calculate average and standard deviation of gr
+        std::vector<double> avg_weighted_SqB(obs_ensemble[0].SqB.size(), 0.0);
+        double sum_L2 = 0;
+        for (int i = 0; i < obs_ensemble.size(); i++)
+        {
+            sum_L2 +=obs_ensemble[i].L*obs_ensemble[i].L;
+        }
+        for (int j = 0; j < obs_ensemble[0].SqB.size(); j++) // every bin or point
+        {
+            for (int i = 0; i < obs_ensemble.size(); i++)
+            {
+                avg_weighted_SqB[j] += obs_ensemble[i].L*obs_ensemble[i].L*obs_ensemble[i].SqB[j]/sum_L2;
+            }
+        }
+        // write stats to the file
+        f << "stats,segment_type,Lmu,Lsig,Kt,Kb,Rf,Rg,SqB_array\n";
+        f << "mean" << "," << segment_type << "," << Lmu << "," << Lsig << "," << Epar.Kt << "," << Epar.Kb << "," << Rf << "," << avg_Rg;
+        for (int j = 0; j < avg_weighted_SqB.size(); j++)
+        {
+            f << "," << avg_weighted_SqB[j];
+        }
+        f << "\nstd_dev/sqrt(number of polymer)";
+        f << "\nr or qB " << ",NA, NA, NA, NA, NA, NA, NA";
+        for (int i = 0; i < obs_ensemble[0].qB.size(); i++)
+        {
+            f << "," << obs_ensemble[0].qB[i];
+        }
+    }
+    f.close();
+
+}
 void biaxial_polymer::generate_and_save_polymer_ensemble(int number_of_polymer, int bin_num, std::string filename, bool save_detail)
 {
     std::vector<observable> obs_ensemble;
@@ -455,7 +506,8 @@ void biaxial_polymer::generate_and_save_polymer_ensemble(int number_of_polymer, 
     // save_distribution_function_to_file(gr_filename, "gr", obs_ensemble, save_detail);
 
     std::string Sq_filename = filename.substr(0, filename.find_last_of(".")) + "_SqB.csv";
-    save_distribution_function_to_file(Sq_filename, "SqB", obs_ensemble, save_detail);
+    save_L_weighted_Sq_to_file(Sq_filename, obs_ensemble);
+    //save_distribution_function_to_file(Sq_filename, "SqB", obs_ensemble, save_detail);
 }
 
 observable biaxial_polymer::measure_observable(int bin_num)
@@ -488,6 +540,7 @@ observable biaxial_polymer::measure_observable(int bin_num)
     {
         obs.qB[k] = qB_i * std::pow(qB_f / qB_i, 1.0 * k / (bin_num - 1)); // uniform in log scale
     }
+    obs.L = polymer.size();
     return obs;
 }
 

@@ -96,7 +96,8 @@ def plot_polymer_Sq(tex_lw=455.24408, ppi=72):
 
     #all_features, all_Sq, all_Sq_rod, all_Delta_Sq, q = read_Sq_data(folder, parameters)
     segment_type, all_features, all_Sq, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
-    Sq_rod_discrete = calc_Sq_discrete_infinite_thin_rod(q, 300)
+    L0 = 300
+    Sq_rod_discrete = calc_Sq_discrete_infinite_thin_rod(q, L0)
     print("np.shape(all_Sq)", np.shape(all_Sq))
 
     n = 0  # skip first few data

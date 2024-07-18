@@ -83,7 +83,7 @@ int main(int argc, char const *argv[])
             std::cout << "running on local machine\n";
             folder = "../data/scratch_local/" + today;
         } else {
-            number_of_polymer = 500;
+            number_of_polymer = 1000;
             bin_num = 100;
             // running on cluster
             std::cout << "running on cluster\n";
@@ -96,8 +96,17 @@ int main(int argc, char const *argv[])
             std::filesystem::create_directory(folder);
         }
 
+        // single cluster job can run multiple processes
+        biaxial_polymer polymer(segment_type, beta, 1, 1, Epar, 1, true);
+        std::string finfo = std::string(argv[1]) + "_random_run" + std::to_string(run_num);
+        polymer.generate_polymer();
+        // polymer.save_polymer_to_file(folder + "/config_" + finfo + ".csv"); // save sample polymer
+        polymer.generate_and_save_polymer_ensemble(number_of_polymer, bin_num, folder + "/obs_" + finfo + ".csv");
+
         // due to job submission limit, run L to L +10 for each cluster job
         // run 10 run per job
+
+        /*
         for (int n = run_num; n < run_num + 10; n++)
         {
             biaxial_polymer polymer(segment_type, beta, 1, 1, Epar, 1, true);
@@ -106,6 +115,7 @@ int main(int argc, char const *argv[])
             // polymer.save_polymer_to_file(folder + "/config_" + finfo + ".csv"); // save sample polymer
             polymer.generate_and_save_polymer_ensemble(number_of_polymer, bin_num, folder + "/obs_" + finfo + ".csv");
         }
+        */
     }
 
     std::clock_t c_end = std::clock();

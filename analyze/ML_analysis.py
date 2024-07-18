@@ -40,6 +40,7 @@ def read_Delta_Sq_data(folder, parameters, L0=300):
         if os.path.exists(filename):
             Sqdata = np.genfromtxt(filename, delimiter=',', skip_header=1)
             features = Sqdata[0, 2: 8]
+            features = np.insert(features, 2, features[1]/features[0])  # add Lmu/Lsig
             Sq, Sq_err, q = Sqdata[0, 8:], Sqdata[1, 8:], Sqdata[2, 8:]
             # Sq_rod_discrete = Sqdata[3, 7:]
             if len(Sq_rod_discrete) == 0:
@@ -53,12 +54,12 @@ def read_Delta_Sq_data(folder, parameters, L0=300):
             all_Delta_Sq_err.append(Delta_Sq_err)
         else:
             print(f"Warning: File {filename} not found. Skiped")
+    all_feature_names = ["Lmu", "Lsig", "Lsig/Lmu", "Kt", "Kb", "Rf", "Rg"]
+    return segment_type, np.array(all_features), all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q
 
-    return segment_type, np.array(all_features), all_Delta_Sq, all_Delta_Sq_err, q
 
-
-def plot_svd(folder, parameters, all_feature_names):
-    segment_type, all_features, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
+def plot_svd(folder, parameters):
+    segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
     print("all_features shape:", np.array(all_features).shape)
 
     print("np.array(all_Delta_Sq).shape", np.array(all_Delta_Sq).shape)
@@ -187,14 +188,21 @@ def calc_Sq_autocorrelation(mu, all_Delta_Sq, max_z, bin_num):
             ac_mu[i] = 1
         else:
             ac_mu[i] = (avg_mumuz[i]-avg_muz[i]**2)/(avg_mu2z[i]-avg_muz[i]**2)
+
+    if(ac_mu[0]!=1):
+        print("ac_mu[0]!=1: ")
+        print("avg_mumuz[0]-avg_muz[0]**2,", avg_mumuz[0]-avg_muz[0]**2)
+        print("(avg_mu2z[0]-avg_muz[0]**2)",(avg_mu2z[0]-avg_muz[0]**2))
+        print(bin_count)
+    ac_mu[0] = 1
     print("ac_mu", ac_mu)
     return ac_mu, all_z
 
 
-def plot_pddf_acf(folder, parameters, all_feature_names, max_z=2):
+def plot_pddf_acf(folder, parameters, max_z=2, n_bin=100):
     # plot pair distance distribution of Delta Sq
-    segment_type, all_features, all_Delta_Sq, all_Delta_Sq, q = read_Delta_Sq_data(folder, parameters)
-    p_z, z = calc_Sq_pair_distance_distribution(all_Delta_Sq, max_z, 100)
+    segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
+    p_z, z = calc_Sq_pair_distance_distribution(all_Delta_Sq, max_z, n_bin)
 
     plt.figure(figsize=(8, 6))
     plt.plot(z, p_z, label="p_z")
@@ -202,7 +210,7 @@ def plot_pddf_acf(folder, parameters, all_feature_names, max_z=2):
     acf_data = []
     for i in range(len(all_feature_names)):
         # pass
-        acf_mu, z = calc_Sq_autocorrelation(all_features[:, i], all_Delta_Sq, max_z, 100)
+        acf_mu, z = calc_Sq_autocorrelation(all_features[:, i], all_Delta_Sq, max_z, n_bin)
         plt.plot(z, acf_mu, label=f"acf_{all_feature_names[i]}")
         acf_data.append(acf_mu)
 
@@ -221,23 +229,23 @@ def plot_pddf_acf(folder, parameters, all_feature_names, max_z=2):
 
 
 def GaussianProcess_optimization(folder, parameters_train, all_feature_names):
-    segment_type, all_features, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters_train)
+    segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters_train)
     grid_size = 40
     inplane_theta_per_feature = {#"L": (np.logspace(-1, 1, grid_size), np.logspace(-11, -8, grid_size)),
                                  #"Rf": (np.logspace(-1, 2, grid_size), np.logspace(-4, -1, grid_size)), # old Rf
                                  #"Rg": (np.logspace(2, 1, grid_size), np.logspace(-6, -4, grid_size)),  # under Delta Sq space
-
+                                 "Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
                                  "Rf": (np.logspace(-1, 2, grid_size), np.logspace(-2, 1, grid_size)),
                                  "Rg": (np.logspace(0, 2, grid_size), np.logspace(-6, -4, grid_size)),
-                                 "Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
+
 
                                  #"Lsig": (np.logspace(-10, -2, grid_size), np.logspace(-10, -1, grid_size)),
                                  # "Kt": (np.logspace(-5, 1, grid_size), np.logspace(-10, 1, grid_size)),
                                  #"Kb": (np.logspace(-1, 1, grid_size), np.logspace(-11, -8, grid_size)),
                                  }
-    outofplane_theta_per_feature = {"L": (np.logspace(-1, 1, grid_size), np.logspace(-11, -8, grid_size)),
-                                    "Rf": (np.logspace(-1, 2, grid_size), np.logspace(-4, -1, grid_size)),
-                                    "Rg": (np.logspace(-1, 1, grid_size), np.logspace(-6, -4, grid_size)),  # under Delta Sq space
+    outofplane_theta_per_feature = {"Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
+                                    "Rf": (np.logspace(-1, 2, grid_size), np.logspace(-2, 1, grid_size)),
+                                    "Rg": (np.logspace(0, 2, grid_size), np.logspace(-6, -4, grid_size)),  # under Delta Sq space
                                     # "Rg": (np.logspace(-2, 2, grid_size), np.logspace(-4, -1, grid_size)),
 
                                     }
@@ -322,7 +330,7 @@ def GaussianProcess_optimization(folder, parameters_train, all_feature_names):
 
 
 def GaussianProcess_prediction(folder, parameters_test, all_feature_names, all_feature_mean, all_feature_std, all_gp_per_feature):
-    segment_type, all_features, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters_test)
+    segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters_test)
 
     # normalize test data features using the save scaling as the training data
     # all_features = (all_features - all_feature_mean) / all_feature_std

@@ -1,6 +1,8 @@
 from Sq_plot import read_Sq_data
 import numpy as np
 import matplotlib.pyplot as plt
+#import matplotlib
+#matplotlib.use('Qt5Agg')
 # import pandas as pd
 
 
@@ -41,7 +43,7 @@ def plot_SVD_data(tex_lw=455.24408, ppi=72):
 
 
 def plot_SVD_feature_data(tex_lw=455.24408, ppi=72):
-    folder = "../data/20240630"
+    folder = "../data/20240713_partial"
 
     fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.6))
     # for inplane_twist
@@ -62,8 +64,8 @@ def plot_SVD_feature_data(tex_lw=455.24408, ppi=72):
     # ax22 = fig.add_subplot(235, projection='3d')
     # ax23 = fig.add_subplot(236, projection='3d')
 
-    features = ["Lmu", "Rf", "Rg", "Lsig", "Kb", "Kt"]
-    features_tex = [r"$L_{\mu}$", r"$R_f$", r"$R_g$", r"$L_{\sigma}$", r"$K_b$", r"$K_t$"]
+    features = ["Lmu", "Rf", "Rg", "Lsig/Lmu", "Kb", "Kt"]
+    features_tex = [r"$L_{\mu}$", r"$R_f$", r"$R_g$", r"$L_{\sigma}/L_\mu$", r"$K_b$", r"$K_t$"]
     #$cbar_major_locator = [100, 0.1, 5, 5, 20, 20]
     for segment_type in ["outofplane_twist"]:
         if (segment_type == "outofplane_twist"):
@@ -73,14 +75,14 @@ def plot_SVD_feature_data(tex_lw=455.24408, ppi=72):
 
         # plot the svd distribution
         data = np.loadtxt(f"{folder}/data_{segment_type}_svd_projection.txt", skiprows=1, delimiter=",", unpack=True)
-        Lmu, Lsig, Kt, Kb, Rf, Rg, sqv0, sqv1, sqv2 = data
+        Lmu, Lsig, Lsig_per_Lmu, Kt, Kb, Rf, Rg, sqv0, sqv1, sqv2 = data
         # feature_data = {"L": L, "Rf": Rf, "Rg": Rg}
-        feature_data = {"Lmu": Lmu, "Rf": Rf, "Rg": Rg, "Lsig": Lsig, "Kb": Kb, "Kt": Kt}
+        feature_data = {"Lmu": Lmu, "Rf": Rf, "Rg": Rg, "Lsig/Lmu": Lsig_per_Lmu, "Kb": Kb, "Kt": Kt}
         for i in range(len(features)):
             mu = features[i]
             ax = axs[i]
             scatter = ax.scatter(sqv0, sqv1, sqv2, s=1, c=feature_data[mu], cmap="jet_r")
-            ax.view_init(elev=25., azim=70)
+            ax.view_init(elev=-130., azim=-18)
 
             ax.set_xlabel("V0", fontsize=9, labelpad=-12, rotation=0)
             ax.set_ylabel("V1", fontsize=9, labelpad=-7, rotation=0)
