@@ -21,6 +21,12 @@ int main(int argc, char const *argv[])
     std::string today(buffer);
     std::cout << today << std::endl;
 
+    for (int i = 0; i < argc; i++)
+    {
+        std::cout<<"running with input\n";
+        std::cout << argv[i] << " ";
+    }
+
     // precision run with specified parameters
     if (argc == 8 || argc == 7)
     {

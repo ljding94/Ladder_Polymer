@@ -221,16 +221,36 @@ def plot_illustrative_config(tex_lw=455.24408, ppi=72):
     plt.close()
 
 
-def ax_plot_outofplane_twist_segment(ax, r, u, v, ut, vt, dv, dt):
+def ax_plot_outofplane_twist_segment(ax, r, u, v, ut, vt, dv, dt, flip="None", label=""):
 
     # u line
-    ax.plot([r[0]+u[0]*dt, r[0]+u[0]], [r[1]+u[1]*dt, r[1]+u[1]], [r[2]+u[2]*dt, r[2]+u[2]], color="royalblue", linewidth=1.5, alpha=1, solid_capstyle='round')
-    ax.plot([r[0]+u[0]*dt+v[0]*dv, r[0]+u[0]+v[0]*dv], [r[1]+u[1]*dt+v[1]*dv, r[1]+u[1]+v[1]*dv], [r[2]+u[2]*dt+v[2]*dv, r[2]+u[2]+v[2]*dv], color="royalblue", linewidth=1.5, alpha=1, solid_capstyle='round')
+    ax.plot([r[0]+u[0]*dt, r[0]+u[0]], [r[1]+u[1]*dt, r[1]+u[1]], [r[2]+u[2]*dt, r[2]+u[2]], color="gray", linewidth=1.5, alpha=1, solid_capstyle='round')
+    ax.plot([r[0]+u[0]*dt+v[0]*dv, r[0]+u[0]+v[0]*dv], [r[1]+u[1]*dt+v[1]*dv, r[1]+u[1]+v[1]*dv], [r[2]+u[2]*dt+v[2]*dv, r[2]+u[2]+v[2]*dv], color="gray", linewidth=1.5, alpha=1, solid_capstyle='round')
     # v line
-    ax.plot([r[0]+u[0]*dt, r[0]+u[0]*dt+v[0]*dv], [r[1]+u[1]*dt, r[1]+u[1]*dt+v[1]*dv], [r[2]+u[2]*dt, r[2]+u[2]*dt+v[2]*dv], color="royalblue", linewidth=1.5, alpha=1, solid_capstyle='round')
+    color = "gray"
+    ls = "-"
+    if (flip == 0):
+        color = "blue"
+    if (flip == 1):
+        color = "red"
 
+    if (label!=""):
+        ax.plot([r[0]+u[0]*dt, r[0]+u[0]*dt+v[0]*dv], [r[1]+u[1]*dt, r[1]+u[1]*dt+v[1]*dv], [r[2]+u[2]*dt, r[2]+u[2]*dt+v[2]*dv], color=color, linewidth=2, alpha=1, solid_capstyle='round', ls = ls, label=label)
+    else:
+        ax.plot([r[0]+u[0]*dt, r[0]+u[0]*dt+v[0]*dv], [r[1]+u[1]*dt, r[1]+u[1]*dt+v[1]*dv], [r[2]+u[2]*dt, r[2]+u[2]*dt+v[2]*dv], color=color, linewidth=2, alpha=1, solid_capstyle='round', ls = ls)
     # bend v line
-    ax.plot([r[0]+u[0], r[0]+u[0]+v[0]*dv], [r[1]+u[1], r[1]+u[1]+v[1]*dv], [r[2]+u[2], r[2]+u[2]+v[2]*dv], color="royalblue", linewidth=0.5, alpha=0.5, solid_capstyle='round')
+    ax.plot([r[0]+u[0], r[0]+u[0]+v[0]*dv], [r[1]+u[1], r[1]+u[1]+v[1]*dv], [r[2]+u[2], r[2]+u[2]+v[2]*dv], "--", color="gray", linewidth=0.5, alpha=0.5, solid_capstyle='round')
+
+    # ut line
+    ax.plot([r[0]+u[0], r[0]+u[0]+dt*ut[0]], [r[1]+u[1], r[1]+u[1]+dt*ut[1]], [r[2]+u[2], r[2]+u[2]+dt*ut[2]], color="gray", linewidth=1.5, alpha=1, solid_capstyle='round')
+    # ut line
+    ax.plot([r[0]+u[0]+v[0]*dv, r[0]+u[0]+dt*ut[0]+v[0]*dv], [r[1]+u[1]+v[1]*dv, r[1]+u[1]+dt*ut[1]+v[1]*dv], [r[2]+u[2]+v[2]*dv, r[2]+u[2]+dt*ut[2]+v[2]*dv], color="gray", linewidth=1.5, alpha=1, solid_capstyle='round')
+    # vt line
+    ax.plot([r[0]+u[0]+dt*ut[0], r[0]+u[0]+dt*ut[0]+v[0]*dv], [r[1]+u[1]+dt*ut[1], r[1]+u[1]+dt*ut[1]+v[1]*dv], [r[2]+u[2]+dt*ut[2], r[2]+u[2]+dt*ut[2]+v[2]*dv], color="gray", linewidth=1.5, alpha=1, solid_capstyle='round')
+
+    # annotation
+    # if (flip != "None" ):
+    #    ax.text(r[0]+u[0]+dv*v[0]-0.1, r[1]+u[1]+dv*v[1], r[2]+u[2]+dv*v[2]+0.1, fr"{flip}", fontsize=9, color="black")
 
     # ax.plot([dud, du], [0, 1*dv], [0, 0], color="royalblue", linestyle="--", linewidth=0.6, alpha=0.7, solid_capstyle='round')  # edge 1
     # ut line
@@ -248,28 +268,59 @@ def generate_outofplane_twist_polymer(flips):
     r = [np.array([0, 0, 0])]
     u = [np.array([1, 0, 0])]
     v = [np.array([0, 1, 0])]
-    ut.append(u[-1]*np.cos(alpha+v[-1]*np.sin(alpha)))
-    vt.append(-u[-1]*np.sin(alpha)+v[-1]*np.cos(alpha))
+    w = np.cross(u[-1], v[-1])
+    ut.append(u[-1]*np.cos(alpha)+w*np.sin(alpha))
+    vt.append(v[-1])
     for i in range(len(flips)):
         r.append(r[-1]+u[-1])
         u.append(ut[-1])
         v.append(vt[-1])
-        alpha = alpha if flips[i] else -alpha
-        ut.append(u[-1]*np.cos(alpha+v[-1]*np.sin(alpha)))
-        vt.append(-u[-1]*np.sin(alpha)+v[-1]*np.cos(alpha))
+        alpha = -alpha if flips[i]==1 else alpha
+        w = np.cross(u[-1], v[-1])
+        ut.append(u[-1]*np.cos(alpha)+w*np.sin(alpha))
+        vt.append(v[-1])
     return r, u, v, ut, vt
 
 
 def plot_flipping_demo(tex_lw=455.24408, ppi=72):
 
-    r, u, v, ut, vt = generate_outofplane_twist_polymer([0, 1, 0, 1, 1, 1])
+    flip = [1, 1, 1, 0, 0, 0,1]
+    r, u, v, ut, vt = generate_outofplane_twist_polymer(flip)
+    print("len(r)", len(r))
+    print("len(flip)", len(flip))
+    print("r", r)
+    print("u", u)
+    print("v", v)
+    print("ut", ut)
+    print("vt", vt)
 
-    fig = plt.figure(figsize=(tex_lw / ppi * 0.5, tex_lw / ppi * 0.3))
+    fig = plt.figure(figsize=(tex_lw / ppi * 0.5, tex_lw / ppi * 0.4))
     plt.rc("text", usetex=True)
     plt.rc("text.latex", preamble=r"\usepackage{physics}")
     # for outofplane twist (2D CANAL)
     ax = fig.add_subplot(111, projection='3d')
+    all_flip = ["None"] + flip
+    first_blue = 0
+    first_red = 0
+
     for i in range(len(r)):
-        ax_plot_outofplane_twist_segment(ax, r[i], u[i], v[i], ut[i], vt[i], 0.7, 0.1)
+        label=""
+        if (all_flip[i] == 0):
+            color = "blue"
+            if (first_blue == 0):
+                first_blue = 1
+                label = "0"
+        if (all_flip[i] == 1):
+            color = "red"
+            if (first_red == 0):
+                first_red = 1
+                label = "1"
+        ax_plot_outofplane_twist_segment(ax, r[i], u[i], v[i], ut[i], vt[i], 0.8, 0.1, all_flip[i], label)
+    ax.legend(loc="center left",title=r"flip", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
+    ax.view_init(elev=30., azim=-140)
+    plt.tight_layout(pad=-2)
+    plt.savefig("figures/flipping_demo.pdf", format="pdf")
+
     plt.show()
+
     plt.close()
