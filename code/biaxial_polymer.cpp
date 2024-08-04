@@ -163,7 +163,7 @@ void biaxial_polymer::generate_polymer()
     do
     {
         L = int(rand_norm(gen) * Lsig + Lmu);
-    } while (L < 1);
+    } while (L < 2);
     polymer.resize(L);
     // std::cout<<"generating polymer with length L="<<L<<"\n";
 
