@@ -180,8 +180,8 @@ def ax_plot_inplane_twist_monomer(ax, theta, dv, dt):
 def plot_illustrative_config(tex_lw=455.24408, ppi=72):
 
     fig = plt.figure(figsize=(tex_lw / ppi * 0.5, tex_lw / ppi * 0.3))
-    # plt.rc("text", usetex=True)
-    # plt.rc("text.latex", preamble=r"\usepackage{physics}")
+    plt.rc("text", usetex=True)
+    plt.rc("text.latex", preamble=r"\usepackage{physics}")
     # for outofplane twist (2D CANAL)
     ax11 = fig.add_subplot(231, projection='3d')
     ax12 = fig.add_subplot(232, projection='3d')
@@ -216,6 +216,60 @@ def plot_illustrative_config(tex_lw=455.24408, ppi=72):
 
     plt.tight_layout(pad=0.1, h_pad=-1.4, w_pad=-1)
     # plt.tight_layout(h_pad=-2, w_pad=-6)
-    #plt.show()
+    # plt.show()
     plt.savefig("figures/config_demo.pdf", format="pdf")
+    plt.close()
+
+
+def ax_plot_outofplane_twist_segment(ax, r, u, v, ut, vt, dv, dt):
+
+    # u line
+    ax.plot([r[0]+u[0]*dt, r[0]+u[0]], [r[1]+u[1]*dt, r[1]+u[1]], [r[2]+u[2]*dt, r[2]+u[2]], color="royalblue", linewidth=1.5, alpha=1, solid_capstyle='round')
+    ax.plot([r[0]+u[0]*dt+v[0]*dv, r[0]+u[0]+v[0]*dv], [r[1]+u[1]*dt+v[1]*dv, r[1]+u[1]+v[1]*dv], [r[2]+u[2]*dt+v[2]*dv, r[2]+u[2]+v[2]*dv], color="royalblue", linewidth=1.5, alpha=1, solid_capstyle='round')
+    # v line
+    ax.plot([r[0]+u[0]*dt, r[0]+u[0]*dt+v[0]*dv], [r[1]+u[1]*dt, r[1]+u[1]*dt+v[1]*dv], [r[2]+u[2]*dt, r[2]+u[2]*dt+v[2]*dv], color="royalblue", linewidth=1.5, alpha=1, solid_capstyle='round')
+
+    # bend v line
+    ax.plot([r[0]+u[0], r[0]+u[0]+v[0]*dv], [r[1]+u[1], r[1]+u[1]+v[1]*dv], [r[2]+u[2], r[2]+u[2]+v[2]*dv], color="royalblue", linewidth=0.5, alpha=0.5, solid_capstyle='round')
+
+    # ax.plot([dud, du], [0, 1*dv], [0, 0], color="royalblue", linestyle="--", linewidth=0.6, alpha=0.7, solid_capstyle='round')  # edge 1
+    # ut line
+    # ax.plot([du, dtot], [1*dv, 1*dv-dt*np.sin(theta)], [0, 0], color="royalblue", linewidth=1.5, alpha=1, solid_capstyle='round')  # edge 2
+    # vt line
+    # ax.plot([dud, dtot], [0, 1*dv-dt*np.sin(theta)], [0, 0], color="royalblue", linewidth=0.6, alpha=0.7, solid_capstyle='round')  # edge 2
+
+    ax.set_aspect('equal')
+    ax.set_axis_off()
+
+
+def generate_outofplane_twist_polymer(flips):
+    alpha = 51/180*np.pi
+    r, u, v, ut, vt = [], [], [], [], []
+    r = [np.array([0, 0, 0])]
+    u = [np.array([1, 0, 0])]
+    v = [np.array([0, 1, 0])]
+    ut.append(u[-1]*np.cos(alpha+v[-1]*np.sin(alpha)))
+    vt.append(-u[-1]*np.sin(alpha)+v[-1]*np.cos(alpha))
+    for i in range(len(flips)):
+        r.append(r[-1]+u[-1])
+        u.append(ut[-1])
+        v.append(vt[-1])
+        alpha = alpha if flips[i] else -alpha
+        ut.append(u[-1]*np.cos(alpha+v[-1]*np.sin(alpha)))
+        vt.append(-u[-1]*np.sin(alpha)+v[-1]*np.cos(alpha))
+    return r, u, v, ut, vt
+
+
+def plot_flipping_demo(tex_lw=455.24408, ppi=72):
+
+    r, u, v, ut, vt = generate_outofplane_twist_polymer([0, 1, 0, 1, 1, 1])
+
+    fig = plt.figure(figsize=(tex_lw / ppi * 0.5, tex_lw / ppi * 0.3))
+    plt.rc("text", usetex=True)
+    plt.rc("text.latex", preamble=r"\usepackage{physics}")
+    # for outofplane twist (2D CANAL)
+    ax = fig.add_subplot(111, projection='3d')
+    for i in range(len(r)):
+        ax_plot_outofplane_twist_segment(ax, r[i], u[i], v[i], ut[i], vt[i], 0.7, 0.1)
+    plt.show()
     plt.close()

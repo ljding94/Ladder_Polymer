@@ -87,11 +87,11 @@ int main(int argc, char const *argv[])
             bin_num = 100;
             // running on cluster
             std::cout << "running on cluster\n";
-            folder = "~/ladder_polymer/data_hpc/data_pool"; // dump all data to data pool to avoid different finish day issue
+            folder = "/global/homes/d/dingl1/ladder_polymer/data_hpc/data_pool"; // dump all data to data pool to avoid different finish day issue
         }
         if (!std::filesystem::exists(folder))
         {
-            std::cout << today << " folder not exist\n";
+            std::cout << folder << " folder not exist\n";
             std::cout << "creating folder" << folder << "\n";
             std::filesystem::create_directory(folder);
         }
@@ -122,7 +122,6 @@ int main(int argc, char const *argv[])
     double time_elapsed = static_cast<double>(c_end - c_start) / CLOCKS_PER_SEC;
     std::cout << "Time elapsed: " << time_elapsed << " seconds" << std::endl;
 
-    return 0;
     return 0;
 
 }
