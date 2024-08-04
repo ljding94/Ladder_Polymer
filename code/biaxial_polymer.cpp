@@ -34,10 +34,10 @@ biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double
     {
         // randomize parameters Lmu, Lsig etc
         Lmu = 50 + 250 * rand_uni(gen);
-        Lsig = (0.05 + 0.15 * rand_uni(gen))*Lmu; // 5% to 20% of Lmu
-        Epar.Kt = std::pow(10, 0.5 + 2 * rand_uni(gen));
-        Epar.Kb = std::pow(10, 0.5 + 2 * rand_uni(gen));
-        Rf = 0.3 + 0.4 * rand_uni(gen);
+        Lsig = (1.0 + 0.0 * rand_uni(gen))*Lmu; // percentage of Lmu
+        Epar.Kt = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
+        Epar.Kb = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
+        Rf = 0.4 + 0.8 * rand_uni(gen);
     }
     std::cout << "setting system param:" << "Lmu:" << Lmu << ", Lsig:" << Lsig << ", Kt:" << Epar.Kt << ", Kb:" << Epar.Kb << ", Rf:" << Rf << "\n";
 }

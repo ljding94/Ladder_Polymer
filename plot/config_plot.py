@@ -135,7 +135,7 @@ def ax_plot_outofplane_twist_monomer(ax, theta, dv, dt):
     ax.quiver(1, 0.5*dv, dt*np.sin(theta), 0, qd, 0, color="black", arrow_length_ratio=0.5)
     ax.text(1, 0.5*dv+qd, dt*np.sin(theta)+d_text, r"$\hat{\mathrm{v}}_t$", fontsize=9, color="black")
 
-    ax.view_init(elev=45., azim=-120)
+    ax.view_init(elev=30., azim=-140)
     ax.set_aspect('equal')
     ax.set_axis_off()
 

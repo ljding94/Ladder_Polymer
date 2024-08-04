@@ -51,7 +51,7 @@ int main(int argc, char const *argv[])
             bin_num = 100;
             // running on cluster
             std::cout << "running on cluster\n";
-            folder = "/home/dingl1/ladder_polymer/data_Cades/data_pool"; // dump data to data pool first
+            folder = "~/ladder_polymer/data_hpc/data_pool"; // dump data to data pool first
         }
         if (!std::filesystem::exists(folder))
             {
@@ -87,7 +87,7 @@ int main(int argc, char const *argv[])
             bin_num = 100;
             // running on cluster
             std::cout << "running on cluster\n";
-            folder = "/home/dingl1/ladder_polymer/data_Cades/data_pool"; // dump all data to data pool to avoid different finish day issue
+            folder = "~/ladder_polymer/data_hpc/data_pool"; // dump all data to data pool to avoid different finish day issue
         }
         if (!std::filesystem::exists(folder))
         {
