@@ -21,9 +21,9 @@ int main(int argc, char const *argv[])
     std::string today(buffer);
     std::cout << today << std::endl;
 
+    std::cout<<"running with input\n";
     for (int i = 0; i < argc; i++)
     {
-        std::cout<<"running with input\n";
         std::cout << argv[i] << " ";
     }
 
