@@ -17,7 +17,7 @@ struct observable
     std::vector<double> gr; // pair distribution function
     std::vector<double> r; // pair distribution function's r
 
-    double Rg; // radius of gyration
+    double Rg2; // radius of gyration square
     std::vector<double> SqB; // structure factor, orientational averaged: ref: Pedersen 1996 equ 1,
     std::vector<double> qB; // structure factor's q, rotational anveraged, B is the monomer length = 1 as unit length in the simulation
     int L; //record L foe each SqB, needed for weighted average
@@ -103,7 +103,7 @@ public:
     // pair distribution function
     std::vector<double> calc_pair_dsitribution_function(double r_i, double r_f, int bin_num);
     std::vector<double> calc_structure_factor(double qB_i, double qB_f, int bin_num); // structure factor of the polymer, orientational averaged: ref: Pedersen 1996 equ 1
-    double calc_radius_of_gyration(); // radius of gyration
+    double calc_radius_of_gyration_square(); // radius of gyration square
 
 
     // experiment
