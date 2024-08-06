@@ -46,6 +46,8 @@ def plot_SVD_feature_data(tex_lw=455.24408, ppi=72):
     folder = "../data/20240713_partial"
 
     fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.6))
+    plt.rc("text", usetex=True)
+    plt.rc("text.latex", preamble=r"\usepackage{physics}")
     # for inplane_twist
 
     # for Lmu, Lr, Rg which are trainable

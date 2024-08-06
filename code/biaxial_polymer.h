@@ -110,7 +110,7 @@ public:
     void save_polymer_to_file(std::string filename);
     void generate_and_save_polymer_ensemble(int number_of_polymer, int bin_num, std::string filename, bool save_detail = false);
     void save_observable_to_file(std::string filename, std::vector<observable> obs_ensemble, bool save_detail = false);
-    void save_L_weighted_Sq_to_file(std::string filename, std::vector<observable> obs_ensemble);
+    void save_L_weighted_Sq_to_file(std::string filename, std::vector<observable> obs_ensemble, bool save_detail );
 
     void save_distribution_function_to_file(std::string filename, std::string component, std::vector<observable> obs_ensemble,  bool save_detail = false); //component can be "gr" or "Sq"
 

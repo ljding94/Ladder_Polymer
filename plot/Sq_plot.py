@@ -3,6 +3,8 @@ import numpy as np
 import os
 
 # old version
+
+
 def read_Sq_data(folder, parameters):
     all_features = []
     all_Sq = []
@@ -57,20 +59,24 @@ def read_Delta_Sq_data(folder, parameters, L0=300):
     for filename in all_filename:
         print("reading: ", filename)
         if os.path.exists(filename):
-            Sqdata = np.genfromtxt(filename, delimiter=',', skip_header=1)
-            features = Sqdata[0, 2: 8]
-            Sq, Sq_err, q = Sqdata[0, 8:], Sqdata[1, 8:], Sqdata[2, 8:]
+            Sqdata = np.genfromtxt(filename, delimiter=',', skip_header=1, max_rows=1)
+            features = Sqdata[2: 8]
+            features = np.insert(features, 2, features[1]/features[0])  # add Lmu/Lsig
+            # Sq, Sq_err, q = Sqdata[0, 8:], Sqdata[1, 8:], Sqdata[2, 8:]
+            qdata = np.genfromtxt(filename, delimiter=',', skip_header=3, max_rows=1)
+            Sq, q = Sqdata[8:], qdata[8:]
+
             # Sq_rod_discrete = Sqdata[3, 7:]
             if len(Sq_rod_discrete) == 0:
                 Sq_rod_discrete = calc_Sq_discrete_infinite_thin_rod(q, L0)
             # normalize Sq by Sq_rod_discrete with L0
             Delta_Sq = Sq/Sq_rod_discrete
-            #Delta_Sq = Sq
-            Delta_Sq_err = Sq_err/Sq_rod_discrete
+            # Delta_Sq = Sq
+            # Delta_Sq_err = Sq_err/Sq_rod_discrete
             all_features.append(features)
             all_Sq.append(Sq)
             all_Delta_Sq.append(Delta_Sq)
-            all_Delta_Sq_err.append(Delta_Sq_err)
+            # all_Delta_Sq_err.append(Delta_Sq_err)
         else:
             print(f"Warning: File {filename} not found. Skiped")
 
@@ -87,6 +93,8 @@ def plot_polymer_Sq(tex_lw=455.24408, ppi=72):
 
     folder = "../data/20240711"
     fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.6))
+    plt.rc("text", usetex=True)
+    plt.rc("text.latex", preamble=r"\usepackage{physics}")
     axs = fig.subplots(2, 2, sharex=True)
 
     # plot variation of Rf
@@ -94,19 +102,19 @@ def plot_polymer_Sq(tex_lw=455.24408, ppi=72):
                   ["outofplane_twist", 200, 5, 2.0, 2.0, 0.500],
                   ["outofplane_twist", 200, 5, 2.0, 2.0, 0.600]]
 
-    #all_features, all_Sq, all_Sq_rod, all_Delta_Sq, q = read_Sq_data(folder, parameters)
+    # all_features, all_Sq, all_Sq_rod, all_Delta_Sq, q = read_Sq_data(folder, parameters)
     segment_type, all_features, all_Sq, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
     L0 = 300
     Sq_rod_discrete = calc_Sq_discrete_infinite_thin_rod(q, L0)
     print("np.shape(all_Sq)", np.shape(all_Sq))
 
     n = 0  # skip first few data
-    #m = -20 # skip last few data
-    axs[0, 0].loglog(q[n:], Sq_rod_discrete[n:], "--", color="black", label=r"rod; $L=300$")
+    # m = -20 # skip last few data
+    axs[0, 0].loglog(q[n:], Sq_rod_discrete[n:], "--", lw=1, color="black", label=r"rod; $L=300$")
     for i in range(len(parameters)):
         segment_type, Lmu, Lsig, logKt, logKb, Rf = parameters[i]
-        axs[0, 0].loglog(q[n:], all_Sq[i][n:], "-", color=colors[i], label=rf"$R_f={Rf}$")
-        axs[0, 1].semilogx(q[n:], all_Delta_Sq[i][n:], "-", color=colors[i], label=rf"$R_f={Rf}$")
+        axs[0, 0].loglog(q[n:], all_Sq[i][n:], "-", lw=1, color=colors[i], label=rf"$R_f={Rf}$")
+        axs[0, 1].semilogx(q[n:], all_Delta_Sq[i][n:], "-", lw=1, color=colors[i], label=rf"$R_f={Rf}$")
 
     axs[0, 0].tick_params(which="both", direction="in", top="on", right="on", labelbottom=False, labelleft=True, labelsize=7)
     axs[0, 1].tick_params(which="both", direction="in", top="on", right="on", labelbottom=False, labelleft=True, labelsize=7)
@@ -123,12 +131,12 @@ def plot_polymer_Sq(tex_lw=455.24408, ppi=72):
                   ["outofplane_twist", 200, 5, 1.5, 1.5, 0.500],
                   ["outofplane_twist", 300, 5, 1.5, 1.5, 0.500]]
 
-    #all_features, all_Sq, all_Sq_rod, all_Delta_Sq, q = read_Sq_data(folder, parameters)
+    # all_features, all_Sq, all_Sq_rod, all_Delta_Sq, q = read_Sq_data(folder, parameters)
     segment_type, all_features, all_Sq, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
 
     for i in range(len(parameters)):
         segment_type, Lmu, Lsig, logKt, logKb, Rf = parameters[i]
-        axs[1, 0].semilogx(q[n:], all_Delta_Sq[i][n:], "-", color=colors[i], label=rf"$L_\mu={Lmu}$")
+        axs[1, 0].semilogx(q[n:], all_Delta_Sq[i][n:], "-", lw=1, color=colors[i], label=rf"$L_\mu={Lmu}$")
     axs[1, 0].tick_params(which="both", direction="in", top="on", right="on", labelbottom=True, labelleft=True, labelsize=7)
     axs[1, 0].set_xlabel(r"$QB$", fontsize=10)
     axs[1, 0].set_ylabel(r"$S\Delta (QB)$", fontsize=10)
@@ -137,12 +145,12 @@ def plot_polymer_Sq(tex_lw=455.24408, ppi=72):
     # plot variaotion of segment_type
     parameters = [["outofplane_twist", 200, 5, 1.5, 1.5, 0.500],
                   ["inplane_twist", 200, 5, 1.5, 1.5, 0.500]]
-    #all_features, all_Sq, all_Sq_rod, all_Delta_Sq, q = read_Sq_data(folder, parameters)
+    # all_features, all_Sq, all_Sq_rod, all_Delta_Sq, q = read_Sq_data(folder, parameters)
     segment_type, all_features, all_Sq, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
 
     for i in range(len(parameters)):
         segment_type, Lmu, Lsig, logKt, logKb, Rf = parameters[i]
-        axs[1, 1].semilogx(q[n:], all_Delta_Sq[i][n:], "-", color=colors[i], label=f"{segment_type_map[segment_type]}")
+        axs[1, 1].semilogx(q[n:], all_Delta_Sq[i][n:], "-", lw=1, color=colors[i], label=f"{segment_type_map[segment_type]}")
     axs[1, 1].tick_params(which="both", direction="in", top="on", right="on", labelbottom=True, labelleft=True, labelsize=7)
     axs[1, 1].set_xlabel(r"$QB$", fontsize=10)
     axs[1, 1].set_ylabel(r"$S\Delta (QB)$", fontsize=10)
@@ -151,7 +159,7 @@ def plot_polymer_Sq(tex_lw=455.24408, ppi=72):
     # axs[1, 1].legend(ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.1, frameon=False, fontsize=10)
 
     plt.tight_layout()
-    #plt.show()
+    # plt.show()
     plt.savefig("figures/Sq.pdf", format="pdf")
     plt.close()
 

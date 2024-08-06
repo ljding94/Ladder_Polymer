@@ -69,7 +69,8 @@ int main(int argc, char const *argv[])
         polymer.generate_polymer();
         polymer.save_polymer_to_file(folder + "/config_" + finfo + ".csv"); // save sample polymer
 
-        polymer.generate_and_save_polymer_ensemble(number_of_polymer, bin_num, folder + "/obs_" + finfo + ".csv");
+        polymer.generate_and_save_polymer_ensemble(number_of_polymer, bin_num, folder + "/obs_MC_" + finfo + ".csv", true);
+        // for precision run, save all measrued observables and Sq
         // polymer.generate_and_save_polymer_ensemble(number_of_polymer, bin_num, folder + "/obs_" + finfo + "_detail.csv", true);
     }
 

@@ -6,8 +6,10 @@ import matplotlib.pyplot as plt
 
 def plot_GPR_data(tex_lw=455.24408, ppi=72):
 
-    folder = "../data/20240713_partial"
+    folder = "../data/20240804"
     fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.33)) #0.65))
+    plt.rc("text", usetex=True)
+    plt.rc("text.latex", preamble=r"\usepackage{physics}")
     ax11 = fig.add_subplot(131)
     ax12 = fig.add_subplot(132)
     ax13 = fig.add_subplot(133)
@@ -26,21 +28,23 @@ def plot_GPR_data(tex_lw=455.24408, ppi=72):
     for segment_type in ["inplane_twist", "outofplane_twist"]:
         if (segment_type == "inplane_twist"):
             # axs = [ax11, ax12, ax13]
-            color = "royalblue"
-            marker = "x"
+            #color = "royalblue"
+            color = "blue"
+            marker = "1"
         elif (segment_type == "outofplane_twist"):
             # axs = [ax21, ax22, ax23]
-            color = "tomato"
-            marker = "+"
+            #color = "tomato"
+            color = "red"
+            marker = "2"
         for i in range(len(features)):
             mu = features[i]
             ax = axs[i]
             mu, mu_predict, my_predict_err = np.loadtxt(f"{folder}/data_{segment_type}_{mu}_prediction.txt", skiprows=1, delimiter=",", unpack=True)
-            ax.scatter(mu, mu_predict, color=color, marker=marker, s=4, alpha=0.8, lw=0.5, label=segment_type_map[segment_type])
+            ax.scatter(mu, mu_predict, color=color, marker=marker, s=10, alpha=0.75, lw=0.5, label=segment_type_map[segment_type])
             ax.legend(title=features_tex[i], fontsize=7, frameon=False, loc="upper left", handlelength=0.5, handletextpad=0.5)
             max_min = (np.max(mu)-np.min(mu))
             xlim = [np.min(mu)-0.1*max_min, np.max(mu)+0.1*max_min]
-            ax.plot(xlim, xlim, "k-", linewidth=0.5, alpha=0.5)
+            ax.plot(xlim, xlim, "k-", linewidth=0.25, alpha=0.5)
             ax.set_xlim(xlim)
             ax.set_ylim(xlim)
             ax.xaxis.set_major_locator(plt.MultipleLocator(major_locator[i]))
@@ -61,6 +65,7 @@ def plot_GPR_data(tex_lw=455.24408, ppi=72):
 
     plt.tight_layout(pad=0.05)
     plt.savefig("figures/GPR.pdf", format="pdf", dpi=300)
+    plt.savefig("figures/GPR.png", format="png", dpi=300)
 
     plt.close()
 
@@ -70,6 +75,8 @@ def plot_PDDF_ACF_LML_data(tex_lw=455.24408, ppi=72):
 
     folder = "../data/20240713_partial"
     fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.5))
+    plt.rc("text", usetex=True)
+    plt.rc("text.latex", preamble=r"\usepackage{physics}")
     # for inplane twist
     ax11 = fig.add_subplot(241)
     ax12 = fig.add_subplot(242)
@@ -122,7 +129,7 @@ def plot_PDDF_ACF_LML_data(tex_lw=455.24408, ppi=72):
             print(f"gp_theta0={gp_theta0}, gp_theta1={gp_theta1}")
             Theta0, Theta1 = np.meshgrid(theta0, theta1)
 
-            ax.contour(Theta0, Theta1, LML, levels=300)
+            ax.contour(Theta0, Theta1, LML, linewidths=1, levels=200)
             # ax.imshow(LML,extent=[Theta0.min(), Theta0.max(), Theta1.min(), Theta1.max()])
             ax.plot([gp_theta0], [gp_theta1], 'x', color='red', markersize=5, markeredgewidth=2)  # , label=r"l=%.2e, $\sigma$=%.2e" % (gp_theta0, gp_theta1))
             ax.set_xlabel(r"$l$", fontsize=10, labelpad=0)

@@ -38,20 +38,22 @@ def read_Delta_Sq_data(folder, parameters, L0=300):
     for filename in all_filename:
         print("reading: ", filename)
         if os.path.exists(filename):
-            Sqdata = np.genfromtxt(filename, delimiter=',', skip_header=1)
-            features = Sqdata[0, 2: 8]
+            Sqdata = np.genfromtxt(filename, delimiter=',', skip_header=1, max_rows=1)
+            features = Sqdata[2: 8]
             features = np.insert(features, 2, features[1]/features[0])  # add Lmu/Lsig
-            Sq, Sq_err, q = Sqdata[0, 8:], Sqdata[1, 8:], Sqdata[2, 8:]
+            # Sq, Sq_err, q = Sqdata[0, 8:], Sqdata[1, 8:], Sqdata[2, 8:]
+            qdata = np.genfromtxt(filename, delimiter=',', skip_header=3, max_rows=1)
+            Sq, q = Sqdata[8:], qdata[8:]
             # Sq_rod_discrete = Sqdata[3, 7:]
             if len(Sq_rod_discrete) == 0:
                 Sq_rod_discrete = calc_Sq_discrete_infinite_thin_rod(q, L0)
             # normalize Sq by Sq_rod_discrete with L0
             Delta_Sq = Sq/Sq_rod_discrete
-            #Delta_Sq = Sq
-            Delta_Sq_err = Sq_err/Sq_rod_discrete
+            # Delta_Sq = Sq
+            # Delta_Sq_err = Sq_err/Sq_rod_discrete
             all_features.append(features)
             all_Delta_Sq.append(Delta_Sq)
-            all_Delta_Sq_err.append(Delta_Sq_err)
+            # all_Delta_Sq_err.append(Delta_Sq_err)
         else:
             print(f"Warning: File {filename} not found. Skiped")
     all_feature_names = ["Lmu", "Lsig", "Lsig/Lmu", "Kt", "Kb", "Rf", "Rg"]
@@ -88,7 +90,7 @@ def plot_svd(folder, parameters):
 
     plt.tight_layout()
     plt.savefig(f"{folder}/{segment_type}_svd.png", dpi=300)
-    #plt.show()
+    # plt.show()
     plt.close()
 
     all_Delta_SqV = np.inner(all_Delta_Sq, np.transpose(svd.Vh))
@@ -96,7 +98,7 @@ def plot_svd(folder, parameters):
     fig = plt.figure(figsize=(4*len(all_feature_names), 4))
     axs = [fig.add_subplot(1, len(all_feature_names), i+1, projection='3d') for i in range(len(all_feature_names))]
     for i in range(len(all_feature_names)):
-        scatter = axs[i].scatter(all_Delta_SqV[:, 0], all_Delta_SqV[:, 1], all_Delta_SqV[:, 2],c=all_features[:, i], cmap="jet_r", s=2)
+        scatter = axs[i].scatter(all_Delta_SqV[:, 0], all_Delta_SqV[:, 1], all_Delta_SqV[:, 2], c=all_features[:, i], cmap="jet_r", s=2)
         axs[i].set_xlabel("V[0]")
         axs[i].set_ylabel("V[1]")
         axs[i].set_zlabel("V[2]")
@@ -115,7 +117,7 @@ def plot_svd(folder, parameters):
 
     plt.tight_layout()
     plt.savefig(f"{folder}/{segment_type}_svd_projection_scatter_plot.png", dpi=300)
-    #plt.show()
+    # plt.show()
     plt.close()
 
     # save these analyzed data for further easy plotting
@@ -189,10 +191,10 @@ def calc_Sq_autocorrelation(mu, all_Delta_Sq, max_z, bin_num):
         else:
             ac_mu[i] = (avg_mumuz[i]-avg_muz[i]**2)/(avg_mu2z[i]-avg_muz[i]**2)
 
-    if(ac_mu[0]!=1):
+    if (ac_mu[0] != 1):
         print("ac_mu[0]!=1: ")
         print("avg_mumuz[0]-avg_muz[0]**2,", avg_mumuz[0]-avg_muz[0]**2)
-        print("(avg_mu2z[0]-avg_muz[0]**2)",(avg_mu2z[0]-avg_muz[0]**2))
+        print("(avg_mu2z[0]-avg_muz[0]**2)", (avg_mu2z[0]-avg_muz[0]**2))
         print(bin_count)
     ac_mu[0] = 1
     print("ac_mu", ac_mu)
@@ -231,18 +233,18 @@ def plot_pddf_acf(folder, parameters, max_z=2, n_bin=100):
 def GaussianProcess_optimization(folder, parameters_train, all_feature_names):
     segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters_train)
     grid_size = 40
-    inplane_theta_per_feature = {#"L": (np.logspace(-1, 1, grid_size), np.logspace(-11, -8, grid_size)),
-                                 #"Rf": (np.logspace(-1, 2, grid_size), np.logspace(-4, -1, grid_size)), # old Rf
-                                 #"Rg": (np.logspace(2, 1, grid_size), np.logspace(-6, -4, grid_size)),  # under Delta Sq space
-                                 "Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
-                                 "Rf": (np.logspace(-1, 2, grid_size), np.logspace(-2, 1, grid_size)),
-                                 "Rg": (np.logspace(0, 2, grid_size), np.logspace(-6, -4, grid_size)),
+    inplane_theta_per_feature = {  # "L": (np.logspace(-1, 1, grid_size), np.logspace(-11, -8, grid_size)),
+        # "Rf": (np.logspace(-1, 2, grid_size), np.logspace(-4, -1, grid_size)), # old Rf
+        # "Rg": (np.logspace(2, 1, grid_size), np.logspace(-6, -4, grid_size)),  # under Delta Sq space
+        "Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
+        "Rf": (np.logspace(-1, 2, grid_size), np.logspace(-2, 1, grid_size)),
+        "Rg": (np.logspace(0, 2, grid_size), np.logspace(-6, -4, grid_size)),
 
 
-                                 #"Lsig": (np.logspace(-10, -2, grid_size), np.logspace(-10, -1, grid_size)),
-                                 # "Kt": (np.logspace(-5, 1, grid_size), np.logspace(-10, 1, grid_size)),
-                                 #"Kb": (np.logspace(-1, 1, grid_size), np.logspace(-11, -8, grid_size)),
-                                 }
+        # "Lsig": (np.logspace(-10, -2, grid_size), np.logspace(-10, -1, grid_size)),
+        # "Kt": (np.logspace(-5, 1, grid_size), np.logspace(-10, 1, grid_size)),
+        # "Kb": (np.logspace(-1, 1, grid_size), np.logspace(-11, -8, grid_size)),
+    }
     outofplane_theta_per_feature = {"Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
                                     "Rf": (np.logspace(-1, 2, grid_size), np.logspace(-2, 1, grid_size)),
                                     "Rg": (np.logspace(0, 2, grid_size), np.logspace(-6, -4, grid_size)),  # under Delta Sq space

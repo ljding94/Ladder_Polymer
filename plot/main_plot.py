@@ -10,15 +10,16 @@ def main():
     #plot_animate_polymer_configs()
 
     #plot_illustrative_config()
-    plot_flipping_demo()
+    #plot_flipping_demo()
 
-    #plot_polymer_Sq()
+    plot_polymer_Sq()
     #plot_Rg_L_relation() # no longer used
 
-    #plot_SVD_data()
+    #plot_SVD_data() # outdated
+
     #plot_SVD_feature_data()
     #plot_GPR_data()
-    #plot_PDDF_ACF_LML_data()
+    plot_PDDF_ACF_LML_data()
 
 
 if __name__ == '__main__':
