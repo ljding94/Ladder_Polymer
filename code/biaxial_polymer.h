@@ -91,7 +91,7 @@ public:
 
     inner_structure calc_rand_ut_vt_alpha(std::vector<double> u, std::vector<double> v, double alpha_pre, double Rf); // calculate ut and vt based on u and v and segment_type and flip rate
 
-    void generate_polymer();
+    int generate_polymer();
     // reset polymer
     void reset_polymer();
     //void reset_observable();

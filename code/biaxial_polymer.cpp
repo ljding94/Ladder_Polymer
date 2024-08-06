@@ -33,8 +33,8 @@ biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double
     if (rand_param)
     {
         // randomize parameters Lmu, Lsig etc
-        lnLmu = std::log(50 + 150 * rand_uni(gen));
-        lnLsig = (0.5 + 0.1 * rand_uni(gen)); // [0.5,0.6] corresponds to roughly [0.8,1.2] PDI
+        lnLmu = 2.0 + 2.0 * rand_uni(gen);  // ln(avg_L) = mu + 0.5 sig^2
+        lnLsig = 0.5 + 0.1 * rand_uni(gen); // [0.5,0.6] corresponds to roughly [0.8,1.2] PDI
         //Epar.Kt = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
         Epar.Kt = 20 + 20 * rand_uni(gen);
         //Epar.Kb = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
@@ -158,7 +158,7 @@ bool biaxial_polymer::satisfy_self_avoiding_condition(int i)
     }
     return true;
 }
-void biaxial_polymer::generate_polymer()
+int biaxial_polymer::generate_polymer()
 {
     // determine the length of the polymer
     int L;
@@ -166,6 +166,7 @@ void biaxial_polymer::generate_polymer()
     {
         L = int(std::exp(rand_norm(gen) * lnLsig + lnLmu));
     } while (L < 2);
+    std::cout<<"generating L:"<<L<<"\n";
     polymer.resize(L);
     // std::cout<<"generating polymer with length L="<<L<<"\n";
 
@@ -227,12 +228,17 @@ void biaxial_polymer::generate_polymer()
             polymer[i].u = Rodrigues_rotation(polymer[i].u, polymer[i].v, theta);
             // v unchanged
 
-        } while (!satisfy_self_avoiding_condition(i) && trial < 1e3);
-        if (trial >= 1e3)
+        } while (!satisfy_self_avoiding_condition(i) && trial < 1e4);
+        if (trial >= 1e4)
         {
             start_over_count++;
             // too many failed trial, seems stuck in one place, start over from half of it's place
             i /= 2 * start_over_count; // lower the start over i evry time there is a start over
+        }
+        if(start_over_count > 1e4)
+        {
+            std::cout<<"too many start over, break\n";
+            return 0;
         }
         // accepted, also update ut and vt
         inner_structure inner = calc_rand_ut_vt_alpha(polymer[i].u, polymer[i].v, polymer[i - 1].alpha, Rf);
@@ -240,6 +246,7 @@ void biaxial_polymer::generate_polymer()
         polymer[i].ut = inner.ut;
         polymer[i].vt = inner.vt;
     }
+    return 1; // success
     // std::cout<<"polymer generation accepted rate: " <<(L-1)/total_trial <<std::endl;
 }
 
@@ -391,15 +398,18 @@ void biaxial_polymer::generate_and_save_polymer_ensemble(int number_of_polymer, 
     std::vector<observable> obs_ensemble;
     // generate polymer ensemble and record observable
     int current_progress = 0;
-    for (int i = 0; i < number_of_polymer; i++)
+    int polymer_count = 0;
+    while(polymer_count < number_of_polymer)
     {
         reset_polymer();
-        generate_polymer();
-        obs_ensemble.push_back(measure_observable(bin_num));
-
-        if (int((i + 1) * 100.0 / number_of_polymer) > current_progress + 1)
+        if(generate_polymer())
         {
-            current_progress = int((i + 1) * 100.0 / number_of_polymer);
+            obs_ensemble.push_back(measure_observable(bin_num));
+            polymer_count++;
+        }
+        if (int((polymer_count + 1) * 100.0 / number_of_polymer) > current_progress + 1)
+        {
+            current_progress = int((polymer_count + 1) * 100.0 / number_of_polymer);
             std::cout << "Progress: " << current_progress << "\%" << "\n";
         }
     }

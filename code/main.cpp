@@ -31,8 +31,8 @@ int main(int argc, char const *argv[])
     if (argc == 8 || argc == 7)
     {
         std::string segment_type = argv[1];
-        int lnLmu = std::atoi(argv[2]);
-        int lnLsig = std::atoi(argv[3]);
+        double lnLmu = std::atof(argv[2]);
+        double lnLsig = std::atof(argv[3]);
         Epar.Kt = std::atof(argv[4]); // It = Kt/L,logIt = log_10(It)
         //Epar.Kt = std::pow(10, logKt);
         Epar.Kb = std::atof(argv[5]); // Ib = Kb/L ~ normalized persistence length logIb = log_10(Ib)
