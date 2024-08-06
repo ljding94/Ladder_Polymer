@@ -7,13 +7,13 @@
 // #define PI 3.14159265358979323846
 
 // initialization
-biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double Lmu_, double Lsig_, Energy_parameter Epar_, double Rf_, bool rand_param)
+biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double lnLmu_, double lnLsig_, Energy_parameter Epar_, double Rf_, bool rand_param)
 {
     // system related
     segment_type = segment_type_;
     beta = beta_;
-    Lmu = Lmu_;
-    Lsig = Lsig_;
+    lnLmu = lnLmu_;
+    lnLsig = lnLsig_;
     // set energy related
     // geometric
     Epar.Kt = Epar_.Kt;
@@ -33,15 +33,15 @@ biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double
     if (rand_param)
     {
         // randomize parameters Lmu, Lsig etc
-        Lmu = 100 + 150 * rand_uni(gen);
-        Lsig = (0.8 + 0.4 * rand_uni(gen)) * Lmu; // 80% to 120% of Lmu
+        lnLmu = std::log(50 + 150 * rand_uni(gen));
+        lnLsig = (0.5 + 0.1 * rand_uni(gen)); // [0.5,0.6] corresponds to roughly [0.8,1.2] PDI
         //Epar.Kt = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
-        Epar.Kt = 20 + 30 * rand_uni(gen);
+        Epar.Kt = 20 + 20 * rand_uni(gen);
         //Epar.Kb = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
-        Epar.Kb = 20 + 30 * rand_uni(gen);
+        Epar.Kb = 20 + 20 * rand_uni(gen);
         Rf = 0.4 + 0.4 * rand_uni(gen);
     }
-    std::cout << "setting system param:" << "Lmu:" << Lmu << ", Lsig:" << Lsig << ", Kt:" << Epar.Kt << ", Kb:" << Epar.Kb << ", Rf:" << Rf << "\n";
+    std::cout << "setting system param:" << "lnLmu:" << lnLmu << ", lnLsig:" << lnLsig << ", Kt:" << Epar.Kt << ", Kb:" << Epar.Kb << ", Rf:" << Rf << "\n";
 }
 
 inner_structure biaxial_polymer::calc_rand_ut_vt_alpha(std::vector<double> u, std::vector<double> v, double alpha_pre, double Rf)
@@ -164,7 +164,7 @@ void biaxial_polymer::generate_polymer()
     int L;
     do
     {
-        L = int(rand_norm(gen) * Lsig + Lmu);
+        L = int(std::exp(rand_norm(gen) * lnLsig + lnLmu));
     } while (L < 2);
     polymer.resize(L);
     // std::cout<<"generating polymer with length L="<<L<<"\n";
@@ -265,8 +265,8 @@ void biaxial_polymer::save_observable_to_file(std::string filename, std::vector<
     if (f.is_open())
     {
         f << "beta=" << beta << "\n";
-        f << "Lmu=" << Lmu << "\n";
-        f << "Lsig=" << Lsig << "\n";
+        f << "lnLmu=" << lnLmu << "\n";
+        f << "lnLsig=" << lnLsig << "\n";
         f << "Kt=" << Epar.Kt << "\n";
         f << "Kb=" << Epar.Kb << "\n";
 
@@ -318,120 +318,6 @@ void biaxial_polymer::save_observable_to_file(std::string filename, std::vector<
     f.close();
 }
 
-void biaxial_polymer::save_distribution_function_to_file(std::string filename, std::string component, std::vector<observable> obs_ensemble, bool save_detail)
-{
-    std::vector<std::vector<double>> func;
-    std::vector<double> t;
-    // distribution func(t) will be save to filename
-    // read distribution func to save based on component passed in
-    if (component == "gr")
-    {
-        t = obs_ensemble[0].r;
-        for (int i = 0; i < obs_ensemble.size(); i++)
-        {
-            func.push_back(obs_ensemble[i].gr);
-        }
-    }
-    else if (component == "SqB")
-    {
-        t = obs_ensemble[0].qB;
-        for (int i = 0; i < obs_ensemble.size(); i++)
-        {
-            func.push_back(obs_ensemble[i].SqB);
-        }
-    }
-    else
-    {
-        throw std::runtime_error("Invalid component type");
-    }
-
-    // get Rg statistics
-    double avg_Rg2 = 0.0;
-    double std_Rg2 = 0.0;
-    for (int i = 0; i < obs_ensemble.size(); i++)
-    {
-        avg_Rg2 += obs_ensemble[i].Rg2;
-    }
-    avg_Rg2 /= obs_ensemble.size();
-    for (int i = 0; i < obs_ensemble.size(); i++)
-    {
-        std_Rg2 += (obs_ensemble[i].Rg2 - avg_Rg2) * (obs_ensemble[i].Rg2 - avg_Rg2);
-    }
-    std_Rg2 = std::sqrt(std_Rg2 / obs_ensemble.size());
-
-    // save the actual distribution to file
-    std::ofstream f(filename);
-    if (f.is_open())
-    {
-
-        if (save_detail)
-        {
-            f << "beta=" << beta << "\n";
-            f << "Lmu=" << Lmu << "\n";
-            f << "Lsig=" << Lsig << "\n";
-            f << "Kt=" << Epar.Kt << "\n";
-            f << "Kb=" << Epar.Kb << "\n";
-            f << "index," + component + "_array\n";
-            for (int i = 0; i < func.size(); i++)
-            {
-                f << i;
-                for (int j = 0; j < func[i].size(); j++)
-                {
-                    f << "," << func[i][j];
-                }
-                f << "\n";
-            }
-        }
-        else
-        {
-            // find stats
-            // calculate average and standard deviation of gr
-            std::vector<double> avg_func(func[0].size(), 0.0);
-            std::vector<double> std_dev_func(func[0].size(), 0.0);
-            for (int j = 0; j < func[0].size(); j++) // every bin or point
-            {
-                for (int i = 0; i < func.size(); i++)
-                {
-                    avg_func[j] += func[i][j];
-                }
-                avg_func[j] /= func.size();
-                for (int i = 0; i < func.size(); i++)
-                {
-                    std_dev_func[j] += (func[i][j] - avg_func[j]) * (func[i][j] - avg_func[j]);
-                }
-                std_dev_func[j] = std::sqrt(std_dev_func[j] / func.size());
-            }
-            // write stats to the file
-            f << "stats,segment_type,Lmu,Lsig,Kt,Kb,Rf,Rg2," + component + "_array\n";
-            f << "mean" << "," << segment_type << "," << Lmu << "," << Lsig << "," << Epar.Kt << "," << Epar.Kb << "," << Rf << "," << avg_Rg2;
-            for (int j = 0; j < avg_func.size(); j++)
-            {
-                f << "," << avg_func[j];
-            }
-            f << "\nstd_dev/sqrt(number of polymer)" << ",NA, NA, NA, NA, NA, NA, NA" << std_Rg2 / std::sqrt(obs_ensemble.size());
-            for (int j = 0; j < std_dev_func.size(); j++)
-            {
-                f << "," << std_dev_func[j] / std::sqrt(func.size());
-            }
-        }
-        f << "\nr or qB " << ",NA, NA, NA, NA, NA, NA, NA";
-        for (int i = 0; i < t.size(); i++)
-        {
-            f << "," << t[i];
-        }
-        if (component == "SqB")
-        {
-            f << "\n SqB rod, NA, NA, NA, NA, NA, NA, NA";
-            std::vector<double> SqB_rod = calc_rod_structure_factor(t);
-            for (int i = 0; i < SqB_rod.size(); i++)
-            {
-                f << "," << SqB_rod[i];
-            }
-        }
-    }
-    f.close();
-}
-
 void biaxial_polymer::save_L_weighted_Sq_to_file(std::string filename, std::vector<observable> obs_ensemble, bool save_detail)
 {
 
@@ -441,7 +327,7 @@ void biaxial_polymer::save_L_weighted_Sq_to_file(std::string filename, std::vect
         if (save_detail)
         {
             f << "beta=" << beta << "\n" << "segment_type=" << segment_type << "\n"
-              << "Lmu=" << Lmu << "\n" << "Lsig=" << Lsig << "\n" << "Kt=" << Epar.Kt << "\n" << "Kb=" << Epar.Kb << "\n"
+              << "lnLmu=" << lnLmu << "\n" << "lnLsig=" << lnLsig << "\n" << "Kt=" << Epar.Kt << "\n" << "Kb=" << Epar.Kb << "\n"
               << "Rf=" << Rf << "\n";
             f << "Rg2,L,SqB_array\n";
             for (int i = 0; i < obs_ensemble.size(); i++)
@@ -483,8 +369,8 @@ void biaxial_polymer::save_L_weighted_Sq_to_file(std::string filename, std::vect
                 }
             }
             // write stats to the file
-            f << "stats,segment_type,Lmu,Lsig,Kt,Kb,Rf,Rg2,L,L2,SqB_array\n";
-            f << "mean" << "," << segment_type << "," << Lmu << "," << Lsig << "," << Epar.Kt << "," << Epar.Kb << "," << Rf << "," << avg_Rg2
+            f << "stats,segment_type,lnLmu,lnLsig,Kt,Kb,Rf,Rg2,L,L2,SqB_array\n";
+            f << "mean" << "," << segment_type << "," << lnLmu << "," << lnLsig << "," << Epar.Kt << "," << Epar.Kb << "," << Rf << "," << avg_Rg2
             << "," << avg_L << "," << avg_L2;
             for (int j = 0; j < avg_weighted_SqB.size(); j++)
             {

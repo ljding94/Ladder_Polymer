@@ -64,8 +64,9 @@ public:
     double beta; // system temperature
     //int L;       // length, number of segments
 
-    double Lmu; // average of L distribution
-    double Lsig; // standard diviation of L distribution
+    double lnLmu; // average of ln(L) distribution
+    double lnLsig; // standard diviation of ln(L) distribution
+    // lnL is normal distribution
 
     Energy_parameter Epar;
     double Rf; // flip rate
@@ -80,7 +81,7 @@ public:
     std::vector<double> rand_uni_vec(); // generate a random unit vector
 
     // initialization
-    biaxial_polymer(std::string segment_type_, double beta_, double Lmu_, double Lsig_, Energy_parameter Epar_, double Rf_, bool rand_param = false);
+    biaxial_polymer(std::string segment_type_, double beta_, double lnLmu_, double lnLsig_, Energy_parameter Epar_, double Rf_, bool rand_param = false);
     // for direct sampling
 
     // check self-avoid condition
@@ -110,9 +111,8 @@ public:
     void save_polymer_to_file(std::string filename);
     void generate_and_save_polymer_ensemble(int number_of_polymer, int bin_num, std::string filename, bool save_detail = false);
     void save_observable_to_file(std::string filename, std::vector<observable> obs_ensemble, bool save_detail = false);
-    void save_L_weighted_Sq_to_file(std::string filename, std::vector<observable> obs_ensemble, bool save_detail );
+    void save_L_weighted_Sq_to_file(std::string filename, std::vector<observable> obs_ensemble, bool save_detail = false);
 
-    void save_distribution_function_to_file(std::string filename, std::string component, std::vector<observable> obs_ensemble,  bool save_detail = false); //component can be "gr" or "Sq"
 
    // little tool
    std::vector<double> cross_product(std::vector<double> a, std::vector<double> b); // cross product of a and b
