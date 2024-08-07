@@ -244,9 +244,9 @@ def GaussianProcess_optimization(folder, parameters_train, all_feature_names):
         # "Rf": (np.logspace(-1, 2, grid_size), np.logspace(-4, -1, grid_size)), # old Rf
         # "Rg": (np.logspace(2, 1, grid_size), np.logspace(-6, -4, grid_size)),  # under Delta Sq space
         #"Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
-        "L": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
-        "Rf": (np.logspace(-1, 2, grid_size), np.logspace(-2, 1, grid_size)),
-        "Rg2": (np.logspace(0, 2, grid_size), np.logspace(-6, -4, grid_size)),
+        #"L": (np.logspace(0, 2, grid_size), np.logspace(-3, -1, grid_size)),
+        #"Rf": (np.logspace(0, 2, grid_size), np.logspace(-4, 1, grid_size)),
+        "Rg2": (np.logspace(0, 3, grid_size), np.logspace(-3, -1, grid_size)),
 
 
         # "Lsig": (np.logspace(-10, -2, grid_size), np.logspace(-10, -1, grid_size)),
