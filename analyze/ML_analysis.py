@@ -39,11 +39,16 @@ def read_Delta_Sq_data(folder, parameters, L0=300):
         print("reading: ", filename)
         if os.path.exists(filename):
             Sqdata = np.genfromtxt(filename, delimiter=',', skip_header=1, max_rows=1)
-            features = Sqdata[2: 8]
-            features = np.insert(features, 2, features[1]/features[0])  # add Lmu/Lsig
+            if len(Sqdata) == 0:
+                print(f"Warning: File {filename} is empty. Skiped")
+                continue
+            features = Sqdata[2: 10]
+            features = np.insert(features, 8, features[7]/(features[6]*features[6]))  # add L^2/(L)^2 = PDI
+            print(["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "Rg2", "L", r"$L^2$", "PDI"])
+            print("features", features)
             # Sq, Sq_err, q = Sqdata[0, 8:], Sqdata[1, 8:], Sqdata[2, 8:]
             qdata = np.genfromtxt(filename, delimiter=',', skip_header=3, max_rows=1)
-            Sq, q = Sqdata[8:], qdata[8:]
+            Sq, q = Sqdata[10:]*1e-6, qdata[10:]
             # Sq_rod_discrete = Sqdata[3, 7:]
             if len(Sq_rod_discrete) == 0:
                 Sq_rod_discrete = calc_Sq_discrete_infinite_thin_rod(q, L0)
@@ -56,7 +61,7 @@ def read_Delta_Sq_data(folder, parameters, L0=300):
             # all_Delta_Sq_err.append(Delta_Sq_err)
         else:
             print(f"Warning: File {filename} not found. Skiped")
-    all_feature_names = ["Lmu", "Lsig", "Lsig/Lmu", "Kt", "Kb", "Rf", "Rg"]
+    all_feature_names = ["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "Rg2", "L", "L2", "PDI"]
     return segment_type, np.array(all_features), all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q
 
 
@@ -95,8 +100,8 @@ def plot_svd(folder, parameters):
 
     all_Delta_SqV = np.inner(all_Delta_Sq, np.transpose(svd.Vh))
     plt.figure()
-    fig = plt.figure(figsize=(4*len(all_feature_names), 4))
-    axs = [fig.add_subplot(1, len(all_feature_names), i+1, projection='3d') for i in range(len(all_feature_names))]
+    fig = plt.figure(figsize=(2*len(all_feature_names), 8))
+    axs = [fig.add_subplot(2, len(all_feature_names)//2 +1, i+1, projection='3d') for i in range(len(all_feature_names))]
     for i in range(len(all_feature_names)):
         scatter = axs[i].scatter(all_Delta_SqV[:, 0], all_Delta_SqV[:, 1], all_Delta_SqV[:, 2], c=all_features[:, i], cmap="jet_r", s=2)
         axs[i].set_xlabel("V[0]")
@@ -117,7 +122,7 @@ def plot_svd(folder, parameters):
 
     plt.tight_layout()
     plt.savefig(f"{folder}/{segment_type}_svd_projection_scatter_plot.png", dpi=300)
-    # plt.show()
+    plt.show()
     plt.close()
 
     # save these analyzed data for further easy plotting
@@ -233,23 +238,26 @@ def plot_pddf_acf(folder, parameters, max_z=2, n_bin=100):
 def GaussianProcess_optimization(folder, parameters_train, all_feature_names):
     segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters_train)
     grid_size = 40
+
+    # ["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "Rg2", "L", "L2", "PDI"]
     inplane_theta_per_feature = {  # "L": (np.logspace(-1, 1, grid_size), np.logspace(-11, -8, grid_size)),
         # "Rf": (np.logspace(-1, 2, grid_size), np.logspace(-4, -1, grid_size)), # old Rf
         # "Rg": (np.logspace(2, 1, grid_size), np.logspace(-6, -4, grid_size)),  # under Delta Sq space
-        "Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
+        #"Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
+        "L": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
         "Rf": (np.logspace(-1, 2, grid_size), np.logspace(-2, 1, grid_size)),
-        "Rg": (np.logspace(0, 2, grid_size), np.logspace(-6, -4, grid_size)),
+        "Rg2": (np.logspace(0, 2, grid_size), np.logspace(-6, -4, grid_size)),
 
 
         # "Lsig": (np.logspace(-10, -2, grid_size), np.logspace(-10, -1, grid_size)),
         # "Kt": (np.logspace(-5, 1, grid_size), np.logspace(-10, 1, grid_size)),
         # "Kb": (np.logspace(-1, 1, grid_size), np.logspace(-11, -8, grid_size)),
     }
-    outofplane_theta_per_feature = {"Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
+    outofplane_theta_per_feature = {#"Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
+                                    "L": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
                                     "Rf": (np.logspace(-1, 2, grid_size), np.logspace(-2, 1, grid_size)),
-                                    "Rg": (np.logspace(0, 2, grid_size), np.logspace(-6, -4, grid_size)),  # under Delta Sq space
+                                    "Rg2": (np.logspace(0, 2, grid_size), np.logspace(-6, -4, grid_size)),  # under Delta Sq space
                                     # "Rg": (np.logspace(-2, 2, grid_size), np.logspace(-4, -1, grid_size)),
-
                                     }
 
     if (segment_type == "inplane_twist"):

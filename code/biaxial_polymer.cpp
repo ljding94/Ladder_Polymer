@@ -33,8 +33,9 @@ biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double
     if (rand_param)
     {
         // randomize parameters Lmu, Lsig etc
-        lnLmu = 2.0 + 2.0 * rand_uni(gen);  // ln(avg_L) = mu + 0.5 sig^2
-        lnLsig = 0.5 + 0.1 * rand_uni(gen); // [0.5,0.6] corresponds to roughly [0.8,1.2] PDI
+        lnLmu = std::exp(20 + 40*rand_uni(gen)); // ln(avg_L) = mu + 0.5 sig^2
+        //2.0 + 2.0 * rand_uni(gen);  // ln(avg_L) = mu + 0.5 sig^2
+        lnLsig = 0.75 + 0.15 * rand_uni(gen); // [0.75,0.90] corresponds to roughly [1.75,2.24] PDI
         //Epar.Kt = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
         Epar.Kt = 20 + 20 * rand_uni(gen);
         //Epar.Kb = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
@@ -372,7 +373,7 @@ void biaxial_polymer::save_L_weighted_Sq_to_file(std::string filename, std::vect
             {
                 for (int i = 0; i < obs_ensemble.size(); i++)
                 {
-                    avg_weighted_SqB[j] += obs_ensemble[i].L * obs_ensemble[i].L * obs_ensemble[i].SqB[j] * obs_ensemble.size()/avg_L2;
+                    avg_weighted_SqB[j] += obs_ensemble[i].L * obs_ensemble[i].L * obs_ensemble[i].SqB[j]/(avg_L2*obs_ensemble.size());
                 }
             }
             // write stats to the file

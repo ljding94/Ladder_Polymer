@@ -39,10 +39,10 @@ def main():
         print("hello!")
         # folder = "../data/scratch_local/20240610"
         # folder = "../data/20240713_partial"
-        folder = "../data/20240804"
+        folder = "../data/20240807"
         segment_type = "inplane_twist"
         #segment_type = "outofplane_twist"
-        rand_max = 4000
+        rand_max = 2000
 
         Ls = np.arange(50, 99.1, 1)
         logKts = [1.50]  # np.arange(0.00, 3.001, 0.10)
@@ -59,8 +59,8 @@ def main():
 
         all_feature_names = ["Lmu", "Lsig", "Lsig/Lmu", "Kt", "Kb", "Rf", "Rg"]  # already embedded in read sq funciton
 
-        plot_svd(folder, parameters)
-        plot_pddf_acf(folder, parameters, max_z=80, n_bin=500)
+        #plot_svd(folder, parameters)
+        #plot_pddf_acf(folder, parameters, max_z=200, n_bin=500)
 
         random.shuffle(parameters)
         parameters_train = parameters[:int(0.7*len(parameters))]
