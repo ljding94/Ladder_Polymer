@@ -20,7 +20,7 @@ def calc_Sq_discrete_infinite_thin_rod(q, L):
     return np.array(Sq)
 
 
-def read_Delta_Sq_data(folder, parameters, L0=300):
+def read_Delta_Sq_data(folder, parameters, L0=200):
     # normalized againt L0
     all_features = []
     all_Delta_Sq = []
@@ -212,7 +212,7 @@ def plot_pddf_acf(folder, parameters, max_z=2, n_bin=100):
     p_z, z = calc_Sq_pair_distance_distribution(all_Delta_Sq, max_z, n_bin)
 
     plt.figure(figsize=(8, 6))
-    plt.plot(z, p_z, label="p_z")
+    plt.plot(z, p_z/np.max(p_z), label="p_z/max(p_z)")
 
     acf_data = []
     for i in range(len(all_feature_names)):
@@ -244,9 +244,9 @@ def GaussianProcess_optimization(folder, parameters_train, all_feature_names):
         # "Rf": (np.logspace(-1, 2, grid_size), np.logspace(-4, -1, grid_size)), # old Rf
         # "Rg": (np.logspace(2, 1, grid_size), np.logspace(-6, -4, grid_size)),  # under Delta Sq space
         #"Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
-        #"L": (np.logspace(0, 2, grid_size), np.logspace(-3, -1, grid_size)),
-        #"Rf": (np.logspace(0, 2, grid_size), np.logspace(-4, 1, grid_size)),
-        "Rg2": (np.logspace(0, 3, grid_size), np.logspace(-3, -1, grid_size)),
+        "L": (np.logspace(0, 2, grid_size), np.logspace(-3, -1, grid_size)),
+        "Rf": (np.logspace(0, 2, grid_size), np.logspace(-3, -1, grid_size)),
+        "Rg2": (np.logspace(0, 2, grid_size), np.logspace(-3, -1, grid_size)),
 
 
         # "Lsig": (np.logspace(-10, -2, grid_size), np.logspace(-10, -1, grid_size)),

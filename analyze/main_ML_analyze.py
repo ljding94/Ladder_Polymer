@@ -39,7 +39,7 @@ def main():
         print("hello!")
         # folder = "../data/scratch_local/20240610"
         # folder = "../data/20240713_partial"
-        folder = "../data/20240807"
+        folder = "../data/20240809"
         segment_type = "inplane_twist"
         #segment_type = "outofplane_twist"
         rand_max = 2000
