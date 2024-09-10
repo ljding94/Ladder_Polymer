@@ -46,14 +46,14 @@ int main(int argc, char const *argv[])
         int bin_num;
         if(argc == 8)
         {
-            number_of_polymer = 100;
+            number_of_polymer = 10000;
             bin_num = 100;
             // use "prog name par* local" for local running
             // used for local running!
             std::cout << "running on local machine\n";
             folder = "../data/scratch_local/" + today;
         } else {
-            number_of_polymer = 500;
+            number_of_polymer = 10000;
             bin_num = 100;
             // running on cluster
             std::cout << "running on cluster\n";
@@ -85,12 +85,12 @@ int main(int argc, char const *argv[])
 
         if(argc==4)
         {
-            number_of_polymer = 10;
+            number_of_polymer = 10000;
             bin_num = 100;
             std::cout << "running on local machine\n";
             folder = "../data/scratch_local/" + today;
         } else {
-            number_of_polymer = 1000;
+            number_of_polymer = 10000;
             bin_num = 100;
             // running on cluster
             std::cout << "running on cluster\n";

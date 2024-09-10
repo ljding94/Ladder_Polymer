@@ -119,6 +119,6 @@ public:
    double inner_product(std::vector<double> a, std::vector<double> b); // inner product of a and b
    std::vector<double> Rodrigues_rotation(std::vector<double> v, std::vector<double> k, double theta); // v rotate around k by theta
    std::vector<double> calc_rod_structure_factor(std::vector<double> qB); // calculate the structure factor of a rod
-
+   std::vector<std::vector<double>> calc_structure_factor_2d(std::vector<double> qB);
 };
 #endif

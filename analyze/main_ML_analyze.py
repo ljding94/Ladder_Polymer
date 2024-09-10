@@ -39,9 +39,9 @@ def main():
         print("hello!")
         # folder = "../data/scratch_local/20240610"
         # folder = "../data/20240713_partial"
-        folder = "../data/20240809"
-        segment_type = "inplane_twist"
-        #segment_type = "outofplane_twist"
+        folder = "../data/20240819"
+        #segment_type = "inplane_twist"
+        segment_type = "outofplane_twist"
         rand_max = 2000
 
         Ls = np.arange(50, 99.1, 1)
@@ -60,14 +60,16 @@ def main():
         all_feature_names = ["Lmu", "Lsig", "Lsig/Lmu", "Kt", "Kb", "Rf", "Rg"]  # already embedded in read sq funciton
 
         #plot_svd(folder, parameters)
-        #plot_pddf_acf(folder, parameters, max_z=200, n_bin=500)
+        #plot_pddf_acf(folder, parameters, max_z=15, n_bin=100)
 
         random.shuffle(parameters)
         parameters_train = parameters[:int(0.7*len(parameters))]
         parameters_test = parameters[int(0.7*len(parameters)):]
 
-        all_feature_mean, all_feature_std, all_gp_per_feature = GaussianProcess_optimization(folder, parameters_train, all_feature_names)
-        GaussianProcess_prediction(folder, parameters_test, all_feature_names, all_feature_mean, all_feature_std, all_gp_per_feature)
+        #all_feature_mean, all_feature_std, all_gp_per_feature = GaussianProcess_optimization(folder, parameters_train, all_feature_names)
+        #GaussianProcess_prediction(folder, parameters_test, all_feature_names, all_feature_mean, all_feature_std, all_gp_per_feature)
+
+        calc_Sq_fitted_Rg2(folder, parameters_test, all_feature_names)
 
 
 if __name__ == "__main__":

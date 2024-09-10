@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy
 import matplotlib.patches as mpatches
+import pandas as pd
 
 
 def ax_plot_polymer_config_line(ax, filename):
@@ -234,10 +235,10 @@ def ax_plot_outofplane_twist_segment(ax, r, u, v, ut, vt, dv, dt, flip="None", l
     if (flip == 1):
         color = "red"
 
-    if (label!=""):
-        ax.plot([r[0]+u[0]*dt, r[0]+u[0]*dt+v[0]*dv], [r[1]+u[1]*dt, r[1]+u[1]*dt+v[1]*dv], [r[2]+u[2]*dt, r[2]+u[2]*dt+v[2]*dv], color=color, linewidth=2, alpha=1, solid_capstyle='round', ls = ls, label=label)
+    if (label != ""):
+        ax.plot([r[0]+u[0]*dt, r[0]+u[0]*dt+v[0]*dv], [r[1]+u[1]*dt, r[1]+u[1]*dt+v[1]*dv], [r[2]+u[2]*dt, r[2]+u[2]*dt+v[2]*dv], color=color, linewidth=2, alpha=1, solid_capstyle='round', ls=ls, label=label)
     else:
-        ax.plot([r[0]+u[0]*dt, r[0]+u[0]*dt+v[0]*dv], [r[1]+u[1]*dt, r[1]+u[1]*dt+v[1]*dv], [r[2]+u[2]*dt, r[2]+u[2]*dt+v[2]*dv], color=color, linewidth=2, alpha=1, solid_capstyle='round', ls = ls)
+        ax.plot([r[0]+u[0]*dt, r[0]+u[0]*dt+v[0]*dv], [r[1]+u[1]*dt, r[1]+u[1]*dt+v[1]*dv], [r[2]+u[2]*dt, r[2]+u[2]*dt+v[2]*dv], color=color, linewidth=2, alpha=1, solid_capstyle='round', ls=ls)
     # bend v line
     ax.plot([r[0]+u[0], r[0]+u[0]+v[0]*dv], [r[1]+u[1], r[1]+u[1]+v[1]*dv], [r[2]+u[2], r[2]+u[2]+v[2]*dv], "--", color="gray", linewidth=0.5, alpha=0.5, solid_capstyle='round')
 
@@ -275,7 +276,7 @@ def generate_outofplane_twist_polymer(flips):
         r.append(r[-1]+u[-1])
         u.append(ut[-1])
         v.append(vt[-1])
-        alpha = -alpha if flips[i]==1 else alpha
+        alpha = -alpha if flips[i] == 1 else alpha
         w = np.cross(u[-1], v[-1])
         ut.append(u[-1]*np.cos(alpha)+w*np.sin(alpha))
         vt.append(v[-1])
@@ -284,7 +285,7 @@ def generate_outofplane_twist_polymer(flips):
 
 def plot_flipping_demo(tex_lw=455.24408, ppi=72):
 
-    flip = [1, 1, 1, 0, 0, 0,1]
+    flip = [1, 1, 1, 0, 0, 0, 1]
     r, u, v, ut, vt = generate_outofplane_twist_polymer(flip)
     print("len(r)", len(r))
     print("len(flip)", len(flip))
@@ -304,7 +305,7 @@ def plot_flipping_demo(tex_lw=455.24408, ppi=72):
     first_red = 0
 
     for i in range(len(r)):
-        label=""
+        label = ""
         if (all_flip[i] == 0):
             color = "blue"
             if (first_blue == 0):
@@ -316,7 +317,7 @@ def plot_flipping_demo(tex_lw=455.24408, ppi=72):
                 first_red = 1
                 label = "1"
         ax_plot_outofplane_twist_segment(ax, r[i], u[i], v[i], ut[i], vt[i], 0.8, 0.1, all_flip[i], label)
-    ax.legend(loc="center left",title=r"flip", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
+    ax.legend(loc="center left", title=r"flip", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
     ax.view_init(elev=30., azim=-140)
     plt.tight_layout(pad=-2)
     plt.savefig("figures/flipping_demo.pdf", format="pdf")
@@ -324,3 +325,119 @@ def plot_flipping_demo(tex_lw=455.24408, ppi=72):
     plt.show()
 
     plt.close()
+
+
+def sample_plot_2d_canel(tex_lw=240.71031, ppi=72):
+    print("sample plotting 2d canal")
+    atom_file = "./2D_CANEL_corrd/2d_canal2_atom.txt"
+    bond_file = "./2D_CANEL_corrd/2d_canal2_bond.txt"
+
+    atom_data = pd.read_csv(atom_file, sep=" ", skiprows=1)
+    atom_data["atom_color"] = "silver"
+    atom_data.loc[atom_data["atom_name"] == "H", "atom_color"] = "cyan"
+
+    bond_data = pd.read_csv(bond_file, sep=" ", skiprows=1)
+
+    fig = plt.figure(figsize=(tex_lw / ppi * 1.0, tex_lw / ppi * 0.4))
+    plt.rc("text", usetex=True)
+    plt.rc("text.latex", preamble=r"\usepackage{physics}")
+    ax = fig.add_subplot(111, projection='3d', computed_zorder=False)
+
+    ax.scatter(atom_data["x"], atom_data["y"], atom_data["z"], marker="o", c=atom_data["atom_color"], s=10)
+    # for i in range(len(atom_data)):
+    # ax.text(atom_data["x"][i], atom_data["y"][i], atom_data["z"][i], atom_data["atom_id"][i], fontsize=9)
+
+    for i in range(len(bond_data)):
+        bond_x = [atom_data["x"][atom_data["atom_id"] == bond_data["origin_atom_id"][i]], atom_data["x"][atom_data["atom_id"] == bond_data["target_atom_id"][i]]]
+        bond_y = [atom_data["y"][atom_data["atom_id"] == bond_data["origin_atom_id"][i]], atom_data["y"][atom_data["atom_id"] == bond_data["target_atom_id"][i]]]
+        bond_z = [atom_data["z"][atom_data["atom_id"] == bond_data["origin_atom_id"][i]], atom_data["z"][atom_data["atom_id"] == bond_data["target_atom_id"][i]]]
+        ax.plot(bond_x, bond_y, bond_z, color="silver", lw=1)
+
+    ax.set_aspect('equal')
+    ax.view_init(elev=30., azim=110)
+    ax.set_axis_off()
+
+    r0 = np.array([(atom_data["x"][atom_data["atom_id"] == 11].values[0] + atom_data["x"][atom_data["atom_id"] == 12].values[0]) * 0.5,
+                   (atom_data["y"][atom_data["atom_id"] == 11].values[0] + atom_data["y"][atom_data["atom_id"] == 12].values[0]) * 0.5,
+                   (atom_data["z"][atom_data["atom_id"] == 11].values[0] + atom_data["z"][atom_data["atom_id"] == 12].values[0]) * 0.5])
+
+    v0 = np.array([atom_data["x"][atom_data["atom_id"] == 12].values[0] - atom_data["x"][atom_data["atom_id"] == 11].values[0],
+                   atom_data["y"][atom_data["atom_id"] == 12].values[0] - atom_data["y"][atom_data["atom_id"] == 11].values[0],
+                   atom_data["z"][atom_data["atom_id"] == 12].values[0] - atom_data["z"][atom_data["atom_id"] == 11].values[0]])
+
+    r1 = np.array([(atom_data["x"][atom_data["atom_id"] == 32].values[0] + atom_data["x"][atom_data["atom_id"] == 33].values[0]) * 0.5,
+                   (atom_data["y"][atom_data["atom_id"] == 32].values[0] + atom_data["y"][atom_data["atom_id"] == 33].values[0]) * 0.5,
+                   (atom_data["z"][atom_data["atom_id"] == 32].values[0] + atom_data["z"][atom_data["atom_id"] == 33].values[0]) * 0.5])
+    v1 = np.array([atom_data["x"][atom_data["atom_id"] == 33].values[0] - atom_data["x"][atom_data["atom_id"] == 32].values[0],
+                   atom_data["y"][atom_data["atom_id"] == 33].values[0] - atom_data["y"][atom_data["atom_id"] == 32].values[0],
+                   atom_data["z"][atom_data["atom_id"] == 33].values[0] - atom_data["z"][atom_data["atom_id"] == 32].values[0]])
+
+    r2 = np.array([(atom_data["x"][atom_data["atom_id"] == 53].values[0] + atom_data["x"][atom_data["atom_id"] == 54].values[0]) * 0.5,
+                   (atom_data["y"][atom_data["atom_id"] == 53].values[0] + atom_data["y"][atom_data["atom_id"] == 54].values[0]) * 0.5,
+                   (atom_data["z"][atom_data["atom_id"] == 53].values[0] + atom_data["z"][atom_data["atom_id"] == 54].values[0]) * 0.5])
+    v2 = np.array([atom_data["x"][atom_data["atom_id"] == 54].values[0] - atom_data["x"][atom_data["atom_id"] == 53].values[0],
+                   atom_data["y"][atom_data["atom_id"] == 54].values[0] - atom_data["y"][atom_data["atom_id"] == 53].values[0],
+                   atom_data["z"][atom_data["atom_id"] == 54].values[0] - atom_data["z"][atom_data["atom_id"] == 53].values[0]])
+    r3 = np.array([(atom_data["x"][atom_data["atom_id"] == 74].values[0] + atom_data["x"][atom_data["atom_id"] == 75].values[0]) * 0.5,
+                   (atom_data["y"][atom_data["atom_id"] == 74].values[0] + atom_data["y"][atom_data["atom_id"] == 75].values[0]) * 0.5,
+                   (atom_data["z"][atom_data["atom_id"] == 74].values[0] + atom_data["z"][atom_data["atom_id"] == 75].values[0]) * 0.5])
+
+    d = 2
+    e1 = r0-v0*0.5*d
+    e2 = r1-v0*0.5*d
+    e3 = r1+v0*0.5*d
+    e4 = r0+v0*0.5*d
+    ax.plot([e1[0], e2[0]], [e1[1], e2[1]], [e1[2], e2[2]], color="dimgrey", linewidth=2, alpha=1, solid_capstyle='round', zorder=100)
+    ax.plot([e3[0], e4[0]], [e3[1], e4[1]], [e3[2], e4[2]], color="dimgrey", linewidth=2, alpha=1, solid_capstyle='round', zorder=100)
+    ax.plot([e1[0], e4[0]], [e1[1], e4[1]], [e1[2], e4[2]], color="dimgrey", linewidth=2, alpha=1, solid_capstyle='round', zorder=200)
+
+    e1 = r1-v1*0.5*d
+    e2 = r2-v1*0.5*d
+    e3 = r2+v1*0.5*d
+    e4 = r1+v1*0.5*d
+    ax.plot([e1[0], e2[0]], [e1[1], e2[1]], [e1[2], e2[2]], color="dimgrey", linewidth=2, alpha=1, solid_capstyle='round', zorder=100)
+    ax.plot([e3[0], e4[0]], [e3[1], e4[1]], [e3[2], e4[2]], color="dimgrey", linewidth=2, alpha=1, solid_capstyle='round', zorder=100)
+    ax.plot([e1[0], e4[0]], [e1[1], e4[1]], [e1[2], e4[2]], color="blue", linewidth=2, alpha=1, solid_capstyle='round', zorder=200)
+
+    e1 = r2-v2*0.5*d
+    e2 = r3-v2*0.5*d
+    e3 = r3+v2*0.5*d
+    e4 = r2+v2*0.5*d
+    ax.plot([e1[0], e2[0]], [e1[1], e2[1]], [e1[2], e2[2]], color="dimgrey", linewidth=2, alpha=1, solid_capstyle='round', zorder=100)
+    ax.plot([e3[0], e4[0]], [e3[1], e4[1]], [e3[2], e4[2]], color="dimgrey", linewidth=2, alpha=1, solid_capstyle='round', zorder=100)
+    ax.plot([e1[0], e4[0]], [e1[1], e4[1]], [e1[2], e4[2]], color="blue", linewidth=2, alpha=1, solid_capstyle='round', zorder=200)
+    ax.plot([e2[0], e3[0]], [e2[1], e3[1]], [e2[2], e3[2]], color="dimgrey", linewidth=2, alpha=1, solid_capstyle='round', zorder=200)
+
+    print("r0", r0)
+    print("r1", r1)
+    print("r2", r2)
+
+    u = r1-r0
+    lb = np.sqrt(np.sum(u**2))
+    u = u/np.sqrt(np.sum(u**2))
+    ut = r2-r1
+    ut = ut/np.sqrt(np.sum(ut**2))
+    print("lb", lb)
+    print("u", u)
+    print("ut", ut)
+    print("np.dot(u,ut)", np.dot(u, ut))
+    print("np.arccos(np.dot(u,ut))", np.arccos(np.dot(u, ut)))
+    print("np.arccos(np.dot(u,ut))/np.pi*180", np.arccos(np.dot(u, ut))/np.pi*180)  # 48.61354128560861
+
+    plt.tight_layout()
+    plt.show()
+    plt.close()
+
+
+def plot_molecule_structure(tex_lw=455.24408, ppi=72):
+    # plot molecule structure of 2d canal
+    fig = plt.figure(figsize=(tex_lw / ppi * 0.5, tex_lw / ppi * 0.4))
+    plt.rc("text", usetex=True)
+    plt.rc("text.latex", preamble=r"\usepackage{physics}")
+    # for outofplane twist (2D CANAL)
+    ax = fig.add_subplot(111, projection='3d')
+    fig = plt.figure(figsize=(246 / 72 * 0.5, 246 / 72 * 0.5))
+    plt.rc("text", usetex=True)
+
+    def ax_plot_2d_canel_momomer(ax, r, u, v, yt, vt):
+        pass
