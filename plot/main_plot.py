@@ -10,7 +10,6 @@ def main():
     plot_molecule_structure()
 
     #plot_illustrative_config()
-    sample_plot_2d_canel()
     #plot_flipping_demo()
 
 

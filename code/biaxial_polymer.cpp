@@ -63,7 +63,7 @@ inner_structure biaxial_polymer::calc_rand_ut_vt_alpha(std::vector<double> u, st
     {
         // 2D canal, 51 degree in plane twist of ut and vt
         //double alpha = 51.0 / 180.0 * M_PI; // to-be-determined
-        double alpha = 0.8484663564880675; // or 48.61 degree, read from energy minimization calculation
+        double alpha = 0.92839110145; // or 53.1928918506 degree, read from energy minimization calculation
 
         double cos_alpha, sin_alpha;
         if (rand_uni(gen) < Rf && alpha_pre > 0)
@@ -84,7 +84,7 @@ inner_structure biaxial_polymer::calc_rand_ut_vt_alpha(std::vector<double> u, st
     {
         // 2D canal, 51 degree out of plane twist of ut and vt
         //double alpha = 51.0 / 180.0 * M_PI;
-        double alpha = 0.8484663564880675;  // or 48.61 degree, read from energy minimization calculation
+        double alpha = 0.92839110145;  // or 53.1928918506 degree, read from energy minimization calculation
         double cos_alpha, sin_alpha;
         if (rand_uni(gen) < Rf && alpha_pre > 0)
         {
