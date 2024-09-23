@@ -4,8 +4,6 @@ code/local_run.sh
 code/*.o
 !analyze
 analyze/__pycache__
-!plot
-plot/__pycache__
-plot/figures/*
+!plot/*.py
 !README.md
 !.gitignore
