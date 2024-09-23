@@ -7,9 +7,9 @@ from GPR_plot import *
 
 def main():
 
-    plot_molecule_structure()
+    plot_molecule_structure_model_demo()
 
-    #plot_illustrative_config()
+    #plot_config_demo()
     #plot_flipping_demo()
 
 

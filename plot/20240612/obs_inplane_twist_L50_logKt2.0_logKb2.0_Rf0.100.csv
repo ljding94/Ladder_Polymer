@@ -1,0 +1,7 @@
+beta=1
+L=50
+Kt=100
+Kb=100
+stats,E,Tot_phi,Tot_theta,gr_array
+mean,75.1425,0.289449,1.42795
+std_dev,0,0,0

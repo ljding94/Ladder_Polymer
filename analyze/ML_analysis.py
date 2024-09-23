@@ -87,9 +87,9 @@ def read_Sq_data(folder, parameters):
             if len(Sqdata) == 0:
                 print(f"Warning: File {filename} is empty. Skiped")
                 continue
-            features = Sqdata[2: 10]
-            features = np.insert(features, 8, features[7]/(features[6]*features[6]))  # add L^2/(L)^2 = PDI
-            print(["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "Rg2", "L", r"$L^2$", "PDI"])
+            features = Sqdata[2: 11]
+            features = np.insert(features, 9, features[8]/(features[7]*features[7]))  # add L^2/(L)^2 = PDI
+            print(["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "Rg2", "wRg2", "L", r"$L^2$", "PDI"])
             print("features", features)
             # Sq, Sq_err, q = Sqdata[0, 8:], Sqdata[1, 8:], Sqdata[2, 8:]
             qdata = np.genfromtxt(filename, delimiter=',', skip_header=3, max_rows=1)
@@ -101,21 +101,23 @@ def read_Sq_data(folder, parameters):
             # all_Delta_Sq_err.append(Delta_Sq_err)
         else:
             print(f"Warning: File {filename} not found. Skiped")
-    all_feature_names = ["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "Rg2", "L", "L2", "PDI"]
+    all_feature_names = ["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "Rg2", "wRg2", "L", "L2", "PDI"]
     return segment_type, np.array(all_features), all_feature_names, all_Sq, all_Sq_err, q
 
 
 def plot_svd(folder, parameters):
-    segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
+    #segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
+    segment_type, all_features, all_feature_names, all_Sq, all_Sq_err, q = read_Sq_data(folder, parameters)
+    all_lnSq = np.log(all_Sq)
     print("all_features shape:", np.array(all_features).shape)
 
-    print("np.array(all_Delta_Sq).shape", np.array(all_Delta_Sq).shape)
-    svd = np.linalg.svd(all_Delta_Sq)
+    print("np.array(all_Delta_Sq).shape", np.array(all_lnSq).shape)
+    svd = np.linalg.svd(all_lnSq)
     print(svd.S)
     print("np.array(svd.U).shape", np.array(svd.U).shape)
     print("np.array(svd.S).shape", np.array(svd.S).shape)
     print("np.array(svd.Vh).shape", np.array(svd.Vh).shape)
-    # print(np.linalg.svd(all_Delta_Sq))
+    # print(np.linalg.svd(all_lnSq))
 
     plt.figure(figsize=(6, 3))
     # Subplot for svd.S
@@ -138,27 +140,27 @@ def plot_svd(folder, parameters):
     # plt.show()
     plt.close()
 
-    all_Delta_SqV = np.inner(all_Delta_Sq, np.transpose(svd.Vh))
+    all_lnSqV = np.inner(all_lnSq, np.transpose(svd.Vh))
     plt.figure()
     fig = plt.figure(figsize=(2*len(all_feature_names), 8))
     axs = [fig.add_subplot(2, len(all_feature_names)//2 + 1, i+1, projection='3d') for i in range(len(all_feature_names))]
     for i in range(len(all_feature_names)):
-        scatter = axs[i].scatter(all_Delta_SqV[:, 0], all_Delta_SqV[:, 1], all_Delta_SqV[:, 2], c=all_features[:, i], cmap="jet_r", s=2)
+        scatter = axs[i].scatter(all_lnSqV[:, 0], all_lnSqV[:, 1], all_lnSqV[:, 2], c=all_features[:, i], cmap="jet_r", s=2)
         axs[i].set_xlabel("V[0]")
         axs[i].set_ylabel("V[1]")
         axs[i].set_zlabel("V[2]")
         axs[i].set_title(all_feature_names[i])
         axs[i].set_box_aspect([1, 1, 1])  # Set the aspect ratio of the plot
         # Set the same range for each axis
-        max_range = np.array([all_Delta_SqV[:, 0].max()-all_Delta_SqV[:, 0].min(), all_Delta_SqV[:, 1].max()-all_Delta_SqV[:, 1].min(), all_Delta_SqV[:, 2].max()-all_Delta_SqV[:, 2].min()]).max() / 2.0
-        mid_x = (all_Delta_SqV[:, 0].max()+all_Delta_SqV[:, 0].min()) * 0.5
-        mid_y = (all_Delta_SqV[:, 1].max()+all_Delta_SqV[:, 1].min()) * 0.5
-        mid_z = (all_Delta_SqV[:, 2].max()+all_Delta_SqV[:, 2].min()) * 0.5
+        max_range = np.array([all_lnSqV[:, 0].max()-all_lnSqV[:, 0].min(), all_lnSqV[:, 1].max()-all_lnSqV[:, 1].min(), all_lnSqV[:, 2].max()-all_lnSqV[:, 2].min()]).max() / 2.0
+        mid_x = (all_lnSqV[:, 0].max()+all_lnSqV[:, 0].min()) * 0.5
+        mid_y = (all_lnSqV[:, 1].max()+all_lnSqV[:, 1].min()) * 0.5
+        mid_z = (all_lnSqV[:, 2].max()+all_lnSqV[:, 2].min()) * 0.5
         axs[i].set_xlim(mid_x - max_range, mid_x + max_range)
         axs[i].set_ylim(mid_y - max_range, mid_y + max_range)
         axs[i].set_zlim(mid_z - max_range, mid_z + max_range)
         fig.colorbar(scatter, ax=axs[i], fraction=0.02)
-        axs[i].view_init(elev=60., azim=18)
+        axs[i].view_init(elev=2., azim=65)
 
     plt.tight_layout()
     plt.savefig(f"{folder}/{segment_type}_svd_projection_scatter_plot.png", dpi=300)
@@ -173,7 +175,7 @@ def plot_svd(folder, parameters):
 
     #  svd projection data
     # save svd projection data
-    data = np.column_stack((all_features, all_Delta_SqV[:, 0], all_Delta_SqV[:, 1], all_Delta_SqV[:, 2]))
+    data = np.column_stack((all_features, all_lnSqV[:, 0], all_lnSqV[:, 1], all_lnSqV[:, 2]))
     column_names = all_feature_names + ['sqv[0]', 'sqv[1]', 'sqv[2]']
     np.savetxt(f"{folder}/data_{segment_type}_svd_projection.txt", data, delimiter=',', header=','.join(column_names), comments='')
 
@@ -194,13 +196,13 @@ def calc_Sq_pair_distance_distribution(all_Delta_Sq, max_z, bin_num):
     return all_Delta_Sq_dis, all_z
 
 
-def calc_Sq_autocorrelation(mu, all_Delta_Sq, max_z, bin_num):
+def calc_Sq_autocorrelation(mu, all_lnSq, max_z, bin_num):
     # measure the autocorrelation of mu(Delta_Sq)
     all_z = np.linspace(0, max_z, bin_num)
     avg_mu = np.mean(mu)
     avg_mu2 = np.mean(np.square(mu))
     print("np.shape(mu)", np.shape(mu))
-    print("np.shape(all_Delta_Sq)", np.shape(all_Delta_Sq))
+    print("np.shape(all_lnSq)", np.shape(all_lnSq))
 
     print("avg_mu:", avg_mu)
     print("avg_mu2:", avg_mu2)
@@ -211,12 +213,12 @@ def calc_Sq_autocorrelation(mu, all_Delta_Sq, max_z, bin_num):
     avg_muz = np.zeros(bin_num)
 
     # avg_mumuz[0] = avg_mu2  # for self distance
-    # for i in range(len(all_Delta_Sq)-1):
-    #    for j in range(i+1, len(all_Delta_Sq)):
+    # for i in range(len(all_lnSq)-1):
+    #    for j in range(i+1, len(all_lnSq)):
     bin_count = np.zeros(bin_num)
     for i in range(len(mu)):
         for j in range(len(mu)):
-            Delta_Sq_dis = np.sqrt(np.sum(np.square(all_Delta_Sq[i]-all_Delta_Sq[j])))
+            Delta_Sq_dis = np.sqrt(np.sum(np.square(all_lnSq[i]-all_lnSq[j])))
             bin_index = int(Delta_Sq_dis/(max_z/bin_num))
             if (bin_index >= bin_num):
                 raise ValueError(f"bin_index >= bin_num, z={bin_index/bin_num*max_z}")
@@ -248,8 +250,10 @@ def calc_Sq_autocorrelation(mu, all_Delta_Sq, max_z, bin_num):
 
 def plot_pddf_acf(folder, parameters, max_z=2, n_bin=100):
     # plot pair distance distribution of Delta Sq
-    segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
-    p_z, z = calc_Sq_pair_distance_distribution(all_Delta_Sq, max_z, n_bin)
+    #segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
+    segment_type, all_features, all_feature_names, all_Sq, all_Sq_err, q = read_Sq_data(folder, parameters)
+    all_lnSq = np.log(all_Sq)
+    p_z, z = calc_Sq_pair_distance_distribution(all_lnSq, max_z, n_bin)
 
     plt.figure(figsize=(8, 6))
     plt.plot(z, p_z/np.max(p_z), label="p_z/max(p_z)")
@@ -257,7 +261,7 @@ def plot_pddf_acf(folder, parameters, max_z=2, n_bin=100):
     acf_data = []
     for i in range(len(all_feature_names)):
         # pass
-        acf_mu, z = calc_Sq_autocorrelation(all_features[:, i], all_Delta_Sq, max_z, n_bin)
+        acf_mu, z = calc_Sq_autocorrelation(all_features[:, i], all_lnSq, max_z, n_bin)
         plt.plot(z, acf_mu, label=f"acf_{all_feature_names[i]}")
         acf_data.append(acf_mu)
 
@@ -275,8 +279,10 @@ def plot_pddf_acf(folder, parameters, max_z=2, n_bin=100):
     np.savetxt(f"{folder}/data_{segment_type}_pddf_acf.txt", data, delimiter=',', header=','.join(column_names), comments='')
 
 
-def GaussianProcess_optimization(folder, parameters_train, all_feature_names):
-    segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters_train)
+def GaussianProcess_optimization(folder, parameters_train):
+    #segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters_train)
+    segment_type, all_features, all_feature_names, all_Sq, all_Sq_err, q = read_Sq_data(folder, parameters_train)
+    all_lnSq = np.log(all_Sq)
     grid_size = 40
 
     # ["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "Rg2", "L", "L2", "PDI"]
@@ -294,10 +300,11 @@ def GaussianProcess_optimization(folder, parameters_train, all_feature_names):
         # "Kb": (np.logspace(-1, 1, grid_size), np.logspace(-11, -8, grid_size)),
     }
     outofplane_theta_per_feature = {  # "Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
-        "L": (np.logspace(-1, 1, grid_size), np.logspace(-3, -1, grid_size)),
-        "Rf": (np.logspace(-1, 1, grid_size), np.logspace(-3, -1, grid_size)),
-        "Rg2": (np.logspace(-1, 1, grid_size), np.logspace(-3, -1, grid_size)),
-        # "Rg": (np.logspace(-2, 2, grid_size), np.logspace(-4, -1, grid_size)),
+        "L": (np.logspace(-1, 1, grid_size), np.logspace(-5, -3, grid_size)), # done
+        "PDI": (np.logspace(-1, 1, grid_size), np.logspace(-2, 0, grid_size)),
+        "Rf": (np.logspace(-1, 1, grid_size), np.logspace(-3, -1, grid_size)), #done
+        "Rg2": (np.logspace(-1, 1, grid_size), np.logspace(-5, -3, grid_size)), # done
+        "wRg2": (np.logspace(-1, 1, grid_size), np.logspace(-10, -6, grid_size)), #done
     }
 
     if (segment_type == "inplane_twist"):
@@ -320,7 +327,7 @@ def GaussianProcess_optimization(folder, parameters_train, all_feature_names):
         print("training: ", feature_name)
         feature_index = all_feature_names.index(feature_name)
 
-        F_learn = all_Delta_Sq
+        F_learn = all_lnSq
 
         # if( feature_name == "Rg"):
         #    F_learn = np.delete(all_features, feature_index, axis=1)
@@ -379,9 +386,10 @@ def GaussianProcess_optimization(folder, parameters_train, all_feature_names):
     return all_feature_mean, all_feature_std, all_gp_per_feature
 
 
-def GaussianProcess_prediction(folder, parameters_test, all_feature_names, all_feature_mean, all_feature_std, all_gp_per_feature):
-    segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters_test)
-
+def GaussianProcess_prediction(folder, parameters_test, all_feature_mean, all_feature_std, all_gp_per_feature):
+    #segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters_test)
+    segment_type, all_features, all_feature_names, all_Sq, all_Sq_err, q = read_Sq_data(folder, parameters_test)
+    all_lnSq = np.log(all_Sq)
     # normalize test data features using the save scaling as the training data
     # all_features = (all_features - all_feature_mean) / all_feature_std
 
@@ -434,9 +442,9 @@ def GaussianProcess_prediction(folder, parameters_test, all_feature_names, all_f
         print("Kernel parameters:", gp_theta)
         print("Log-marginal-likelihood: %.3f" % gp.log_marginal_likelihood(gp.kernel_.theta))
 
-        Y_predict, Y_predict_err = gp.predict(all_Delta_Sq, return_std=True)
+        Y_predict, Y_predict_err = gp.predict(all_lnSq, return_std=True)
         # print("np.shape(test_data[:, 0])", np.shape(test_data[:, 0]))
-        print("np.shape(all_Delta_Sq)", np.shape(all_Delta_Sq))
+        print("np.shape(all_lnSq)", np.shape(all_lnSq))
         print("np.shape(Y_predict)", np.shape(Y_predict))
 
         Y_predict = Y_predict * all_feature_std[feature_index] + all_feature_mean[feature_index]
@@ -477,7 +485,7 @@ def fit_Rg2(q, Sq):
     return popt[0], perr[0]
 
 
-def calc_Sq_fitted_Rg2(folder, parameters_test, all_feature_names):
+def calc_Sq_fitted_Rg2(folder, parameters_test):
     segment_type, all_features, all_feature_names, all_Sq, all_Sq_err, q = read_Sq_data(folder, parameters_test)
 
     MC_Rg2 = all_features[:, all_feature_names.index("Rg2")]

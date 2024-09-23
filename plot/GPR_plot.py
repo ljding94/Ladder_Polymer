@@ -4,29 +4,31 @@ import matplotlib.pyplot as plt
 # import pandas as pd
 
 
-def plot_GPR_data(tex_lw=455.24408, ppi=72):
+def plot_GPR_data(tex_lw=240.71031, ppi=72):
 
-    folder = "../data/20240819"
-    fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.33))  # 0.65))
+    folder = "../data/20240910"
+    fig= plt.figure(figsize=(tex_lw / ppi * 2, tex_lw / ppi * 0.42))  # 0.65))
     plt.rc("text", usetex=True)
     plt.rc("text.latex", preamble=r"\usepackage{physics}")
-    ax11 = fig.add_subplot(131)
-    ax12 = fig.add_subplot(132)
-    ax13 = fig.add_subplot(133)
-
-    # plot both segment type in same ax
-    # ax21 = fig.add_subplot(234)
-    # ax22 = fig.add_subplot(235)
-    # ax23 = fig.add_subplot(236)
+    ax1 = fig.add_subplot(151)
+    ax2 = fig.add_subplot(152)
+    ax3 = fig.add_subplot(153)
+    ax4 = fig.add_subplot(154)
+    ax5 = fig.add_subplot(155)
 
     # features to plot
-    features = ["L", "Rf", "Rg2"]
-    features_tex = [r"$\left<L\right>$", r"$R_f$", r"$R_g^2$"]
+    feature_to_tex = {
+        "L": r"$\overline{L}$",
+        "PDI": r"$PDI$",
+        "Rf": r"$R_f$",
+        "Rg2": r"$\overline{R_g^2}$",
+        "wRg2": r"$\widetilde{R_g^2}$"
+    }
     segment_type_map = {"outofplane_twist": "2D CANAL", "inplane_twist": "3D CANAL"}
-    axs = [ax11, ax12, ax13]
-    major_locator = [20, 0.1, 40]
-    minor_locator = [10, 0.05, 20]
-    for segment_type in ["inplane_twist",  "outofplane_twist"]:
+    axs = [ax1, ax2, ax3, ax4, ax5]
+    major_locator = [40, 0.5, 0.2, 40, 200]
+    #minor_locator = [10, 0.05, 20]
+    for segment_type in ["outofplane_twist"]:
         if (segment_type == "inplane_twist"):
             # axs = [ax11, ax12, ax13]
             # color = "royalblue"
@@ -36,36 +38,49 @@ def plot_GPR_data(tex_lw=455.24408, ppi=72):
             # axs = [ax21, ax22, ax23]
             # color = "tomato"
             color = "red"
-            marker = "2"
-        for i in range(len(features)):
-            mu = features[i]
+            marker = "."
+        i = -1
+        for feature, feature_tex in feature_to_tex.items():
+            i += 1
+            mu = feature
             ax = axs[i]
             mu, mu_predict, my_predict_err = np.loadtxt(f"{folder}/data_{segment_type}_{mu}_prediction.txt", skiprows=1, delimiter=",", unpack=True)
-            ax.scatter([mu[0]], [mu_predict[0]], color=color, marker=marker, s=10, alpha=1.0, lw=0.5, label=segment_type_map[segment_type])
-            ax.scatter(mu, mu_predict, color=color, marker=marker, s=10, alpha=0.5, lw=0.5)
-            ax.legend(title=features_tex[i], fontsize=7, frameon=False, loc="upper left", handlelength=0.5, handletextpad=0.5)
+            #color = plt.cm.rainbow((mu - np.min(mu)) / (np.max(mu) - np.min(mu)))
+            ax.scatter(mu, mu_predict, color=color, marker=marker, s=2, alpha=0.5, lw=0.5)
+            #sm = plt.cm.ScalarMappable(cmap=plt.cm.rainbow, norm=plt.Normalize(vmin=np.min(mu), vmax=np.max(mu)))
+            #sm.set_array([])
+            #cbar = plt.colorbar(sm, ax=ax, orientation='vertical', fraction=0.046, pad=0.04)
+            #cbar.set_label('Color Scale', fontsize=7)
+            #cbar.ax.tick_params(labelsize=7)
+            ax.tick_params(labelsize=7, which="both", direction="in", top="on", right="on")
+            ax.legend(title=feature_tex, fontsize=7, frameon=False, loc="upper left", handlelength=0.5, handletextpad=0.5)
             max_min = (np.max(mu)-np.min(mu))
             xlim = [np.min(mu)-0.1*max_min, np.max(mu)+0.1*max_min]
             ax.plot(xlim, xlim, "k-", linewidth=0.25, alpha=0.5)
             ax.set_xlim(xlim)
             ax.set_ylim(xlim)
             ax.xaxis.set_major_locator(plt.MultipleLocator(major_locator[i]))
-            ax.xaxis.set_minor_locator(plt.MultipleLocator(minor_locator[i]))
+            ax.xaxis.set_minor_locator(plt.MultipleLocator(major_locator[i]*0.5))
             ax.yaxis.set_major_locator(plt.MultipleLocator(major_locator[i]))
-            ax.yaxis.set_minor_locator(plt.MultipleLocator(minor_locator[i]))
+            ax.yaxis.set_minor_locator(plt.MultipleLocator(major_locator[i]*0.5))
             ax.grid(True, which="both", linestyle="--", linewidth=0.5)
+            ax.set_aspect('equal')
 
-    axall = fig.add_subplot(111, frameon=False)
-    axall.tick_params(labelcolor='none', which='both', top=False, bottom=False, left=False, right=False)
-    axall.set_xlabel("MC References", fontsize=9)
-    axall.set_ylabel("ML Inversion", fontsize=9)
+    ax1.set_ylabel("ML Inversion", fontsize=9, labelpad=0)
+    ax3.set_xlabel("MC References", fontsize=9, labelpad=0)
+    #axall = fig.add_subplot(111, frameon=True)
+    #axall.tick_params(labelcolor='none', which='both', top=False, bottom=False, left=False, right=False)
+    #axall.text(0.4,-0.25,"MC References", fontsize=9)
+    #axall.text(-0.05,0.2,"ML Inversion", fontsize=9, rotation=90)
+    #axall.set_xlabel("MC References", fontsize=9, labelpad=-15)
+    #axall.set_ylabel("ML Inversion", fontsize=9, labelpad=-3)
 
     # add annotation
-    annotation = [r"$\mathbf{(%s)}$" % s for s in ["a", "b", "c"]]  # , "d", "e", "f"]]
-    for ax in [ax11, ax12, ax13]:  # , ax21, ax22, ax23]:
-        ax.text(0.8, 0.1, annotation.pop(0), fontsize=10, transform=ax.transAxes)
+    annotation = [r"$\mathbf{(%s)}$" % s for s in ["a", "b", "c" , "d", "e", "f"]]
+    for ax in axs:  # , ax21, ax22, ax23]:
+        ax.text(0.8, 0.1, annotation.pop(0), fontsize=9, transform=ax.transAxes)
 
-    plt.tight_layout(pad=0.05)
+    plt.tight_layout(pad=0.1)
     # plt.show()
     plt.savefig("figures/GPR.pdf", format="pdf", dpi=300)
     # plt.savefig("figures/GPR.png", format="png", dpi=300)
@@ -163,7 +178,7 @@ def plot_PDDF_ACF_LML_data(tex_lw=455.24408, ppi=72):
     # plt.tight_layout(h_pad=0.01, w_pad=0.0)
     plt.tight_layout(pad=0.05, h_pad=-0.1, w_pad=-0.1)
     # fig.subplots_adjust(wspace=0.1, hspace=0.1)
-    #plt.show()
+    # plt.show()
     plt.savefig("figures/PDDF_ACF_LML.pdf", format="pdf", dpi=300)
     plt.show()
     plt.close()

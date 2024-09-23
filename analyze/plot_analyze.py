@@ -335,3 +335,5 @@ def plot_stats_obervable_for_multiple_parameters(Kts, Kbs):
     # Save the figure
     plt.savefig(
         '../data/scratch_local/pair_distribution_function_stats_multi_parameters.png')
+
+

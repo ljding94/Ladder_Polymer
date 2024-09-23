@@ -63,7 +63,6 @@ def read_Delta_Sq_data(folder, parameters, L0=200):
     return segment_type, np.array(all_features), all_Sq, all_Delta_Sq, all_Delta_Sq_err, q
 
 
-
 def read_Delta_Sq_data_detail(folder, parameter):
     all_L = []
     all_Sq = []
@@ -83,7 +82,7 @@ def read_Delta_Sq_data_detail(folder, parameter):
     return q, all_L, all_Sq
 
 
-def plot_polymer_Sq(tex_lw=455.24408, ppi=72):
+def plot_polymer_Sq(tex_lw=240.71031, ppi=72):
 
     # map Rf and L to line color and style
     # LS = {50: "-", 70: "--", 90: "-."}
@@ -91,77 +90,81 @@ def plot_polymer_Sq(tex_lw=455.24408, ppi=72):
     colors = ["tomato", "gold", "lawngreen", "steelblue"]
     segment_type_map = {"outofplane_twist": "2D CANAL", "inplane_twist": "3D CANAL"}
 
-    folder = "../data/scratch_local/20240815"
-    fig = plt.figure(figsize=(tex_lw / ppi * 1.0, tex_lw / ppi * 0.6))
+    folder = "../data/scratch_local/20240916"
+    fig = plt.figure(figsize=(tex_lw / ppi * 1.0, tex_lw / ppi * 0.8))
     plt.rc("text", usetex=True)
     plt.rc("text.latex", preamble=r"\usepackage{physics}")
-    axs = fig.subplots(2, 2, sharex=True)
+    axs = fig.subplots(2, 2, sharex=True, sharey=True)
 
     # plot distribution of L
-    parameters = [["inplane_twist", 3.0, 0.8, 20.0, 20.0, 0.500]]
+    parameters = [["outofplane_twist", 3.0, 0.50, 20.0, 20.0, 0.500]]
     segment_type, lnLmu, lnLsig, Kt, Kb, Rf = parameters[0]
     q, all_L, all_Sq = read_Delta_Sq_data_detail(folder, parameters[0])
     max_L = np.max(all_L)
-    for i in range(len(all_L))[::10]:
-        axs[0, 0].loglog(q, all_Sq[i], "-", lw=0.75, alpha=0.9*(all_L[i]/max_L)**2)
+    for i in range(len(all_L))[::100]:
+        axs[0, 0].loglog(q, all_Sq[i], "-", lw=0.5, alpha=0.5, color="royalblue")  # , alpha=0.9*(all_L[i]/max_L)**2)
+    axs[0, 0].loglog(q, all_Sq[0], "-", lw=1, alpha=0.5, color="royalblue", label=r"$S_L(QB)$")
     print("hello")
     segment_type, all_features, all_Sq, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
     print("np.shape(all_Sq)", np.shape(all_Sq))
-    axs[0, 0].loglog(q, all_Sq[0], "-", lw=1, color="black", label=r"S(QB); $\mu_{(\ln{L})}=%.1f$" % (lnLmu))
-    Sq_rod_discrete = calc_Sq_discrete_infinite_thin_rod(q, 200)
-    axs[0, 0].loglog(q, Sq_rod_discrete, ":", lw=1, color="black", label=r"rod; $L=200$")
+    axs[0, 0].loglog(q, all_Sq[0], "-", lw=1, color="black", label=r"$I(QB)$")
+    # Sq_rod_discrete = calc_Sq_discrete_infinite_thin_rod(q, 200)
+    # axs[0, 0].loglog(q, Sq_rod_discrete, ":", lw=1, color="black", label=r"rod; $L=200$")
     axs[0, 0].tick_params(which="both", direction="in", top="on", right="on", labelbottom=False, labelleft=True, labelsize=7)
     # axs[0, 0].set_xlabel("QB", fontsize=10)
-    axs[0, 0].set_ylabel(r"$S(QB)$", fontsize=10)
-    axs[0, 0].legend(title=f"{segment_type_map[segment_type]}", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=10)
+    axs[0, 0].set_ylabel(r"$I(QB)$", fontsize=9, labelpad=0)
+
+    axs[0, 0].legend(loc="center left", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
 
     # plot variation of Rf
-    parameters = [["inplane_twist", 3.0, 0.8, 20.0, 20.0, 0.400],
-                  ["inplane_twist", 3.0, 0.8, 20.0, 20.0, 0.500],
-                  ["inplane_twist", 3.0, 0.8, 20.0, 20.0, 0.600]]
+    parameters = [["outofplane_twist", 3.0, 0.5, 20.0, 20.0, 0.400],
+                  ["outofplane_twist", 3.0, 0.5, 20.0, 20.0, 0.500],
+                  ["outofplane_twist", 3.0, 0.5, 20.0, 20.0, 0.600],
+                  ["outofplane_twist", 3.0, 0.5, 20.0, 20.0, 0.700]]
 
     segment_type, all_features, all_Sq, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
     print("np.shape(all_Sq)", np.shape(all_Sq))
 
     for i in range(len(parameters)):
         segment_type, lnLmu, lnLsig, Kt, Kb, Rf = parameters[i]
-        axs[0, 1].semilogx(q, all_Delta_Sq[i], "-", lw=1, color=colors[i], label=rf"$R_f={Rf}$")
-    axs[0, 1].tick_params(which="both", direction="in", top="on", right="on", labelbottom=False, labelleft=True, labelsize=7)
-    axs[0, 1].set_ylabel(r"$\Delta S(QB)$", fontsize=10)
-    axs[0, 1].legend(title=rf"{segment_type_map[segment_type]}, "+r"$\mu_{(\ln{L})}=$"+rf"${lnLmu}$", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=10)
+        axs[0, 1].semilogx(q, all_Sq[i], "-", lw=1, color=colors[i], label=rf"${Rf}$")
+    axs[0, 1].tick_params(which="both", direction="in", top="on", right="on", labelbottom=False, labelleft=False, labelsize=7)
+    # axs[0, 1].set_ylabel(r"$\Delta S(QB)$", fontsize=10)
+    axs[0, 1].legend(title=r"$R_f$", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
 
     # plot variation of lnLmu
 
-    parameters = [["inplane_twist", 3.0, 0.8, 20.0, 20.0, 0.500],
-                  ["inplane_twist", 3.5, 0.8, 20.0, 20.0, 0.500],
-                  ["inplane_twist", 4.0, 0.8, 20.0, 20.0, 0.500]]
+    parameters = [["outofplane_twist", 2.5, 0.5, 20.0, 20.0, 0.500],
+                  ["outofplane_twist", 3.0, 0.5, 20.0, 20.0, 0.500],
+                  ["outofplane_twist", 3.5, 0.5, 20.0, 20.0, 0.500]]
 
     # all_features, all_Sq, all_Sq_rod, all_Delta_Sq, q = read_Sq_data(folder, parameters)
     segment_type, all_features, all_Sq, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
 
     for i in range(len(parameters)):
         segment_type, lnLmu, lnLsig, Kt, Kb, Rf = parameters[i]
-        axs[1, 0].semilogx(q, all_Delta_Sq[i], "-", lw=1, color=colors[i], label=r"$\mu_{(\ln{L})}=$"+rf"${lnLmu}$")
+        axs[1, 0].semilogx(q, all_Sq[i], "-", lw=1, color=colors[i], label=rf"${lnLmu}$")
     axs[1, 0].tick_params(which="both", direction="in", top="on", right="on", labelbottom=True, labelleft=True, labelsize=7)
-    axs[1, 0].set_xlabel(r"$QB$", fontsize=10)
-    axs[1, 0].set_ylabel(r"$S\Delta (QB)$", fontsize=10)
-    axs[1, 0].legend(title=rf"{segment_type_map[segment_type]}, $R_f={Rf}$", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=10)
+    axs[1, 0].set_xlabel(r"$QB$", fontsize=9, labelpad=0)
+    axs[1, 0].set_ylabel(r"$I(QB)$", fontsize=9, labelpad=0)
+    axs[1, 0].legend(title=r"$\mu_{(\ln{L})}$", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
 
-    # plot variaotion of segment_type
-    parameters = [["inplane_twist", 3.0, 0.8, 20.0, 20.0, 0.500],
-                  ["outofplane_twist", 3.0, 0.8, 20.0, 20.0, 0.500]]
+    # plot variaotion of siglnL
+    parameters = [["outofplane_twist", 3.0, 0.5, 20.0, 20.0, 0.500],
+                  ["outofplane_twist", 3.0, 0.7, 20.0, 20.0, 0.500],
+                  ["outofplane_twist", 3.0, 0.9, 20.0, 20.0, 0.500]]
 
     segment_type, all_features, all_Sq, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
     for i in range(len(parameters)):
         segment_type, lnLmu, lnLsig, Kt, Kb, Rf = parameters[i]
-        axs[1, 1].semilogx(q, all_Delta_Sq[i], "-", lw=1, color=colors[i], label=f"{segment_type_map[segment_type]}")
-    axs[1, 1].tick_params(which="both", direction="in", top="on", right="on", labelbottom=True, labelleft=True, labelsize=7)
-    axs[1, 1].set_xlabel(r"$QB$", fontsize=10)
-    axs[1, 1].set_ylabel(r"$S\Delta (QB)$", fontsize=10)
-    axs[1, 1].legend(title=r"$\mu_{(\ln{L})}=$"+rf"${lnLmu}$" + rf"$, R_f={Rf}$", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=10)
+        axs[1, 1].semilogx(q, all_Sq[i], "-", lw=1, color=colors[i], label=f"{lnLsig:.1f}")
+    axs[1, 1].tick_params(which="both", direction="in", top="on", right="on", labelbottom=True, labelleft=False, labelsize=7)
+    axs[1, 1].set_xlabel(r"$QB$", fontsize=9, labelpad=0)
+    # axs[1, 1].set_ylabel(r"$S\Delta (QB)$", fontsize=10)
+    axs[1, 1].legend(title=r"$\sigma_{(\ln{L})}$", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
     # axs[1, 1].legend(ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.1, frameon=False, fontsize=10)
 
-    plt.tight_layout()
+    plt.tight_layout(pad=0.15)
     # plt.show()
     plt.savefig("figures/Sq.pdf", format="pdf")
     plt.close()
@@ -189,11 +192,11 @@ def plot_Sq_fitted_Rg2(tex_lw=455.24408, ppi=72):
     folder = "../data/scratch_local/20240827"
     parameters = [["inplane_twist", 3.0, 0.8, 20.0, 20.0, 0.50],
                   ["outofplane_twist", 3.0, 0.8, 20.0, 20.0, 0.50]]
-                  #["flat", 3.0, 0.8, 20.0, 20.0, 0.50]]
-    #parameters = [["inplane_twist", 3.0, 0, 20.0, 20.0, 0.50],
+    # ["flat", 3.0, 0.8, 20.0, 20.0, 0.50]]
+    # parameters = [["inplane_twist", 3.0, 0, 20.0, 20.0, 0.50],
     #              ["outofplane_twist", 3.0, 0, 20.0, 20.0, 0.50],
     #              ["flat", 3.0, 0, 20.0, 20.0, 0.50]]
-    #segment_type, lnLmu, lnLsig, Kt, Kb, Rf = parameters[0]
+    # segment_type, lnLmu, lnLsig, Kt, Kb, Rf = parameters[0]
 
     segment_type, all_features, all_Sq, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
     print("np.shape(all_Sq)", np.shape(all_Sq))

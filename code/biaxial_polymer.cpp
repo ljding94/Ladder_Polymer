@@ -33,9 +33,9 @@ biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double
     if (rand_param)
     {
         // randomize parameters Lmu, Lsig etc
-        lnLmu = 3.0 +  1.5*rand_uni(gen); // ln(avg_L) = mu + 0.5 sig^2
+        lnLmu = 2.0 +  2.0*rand_uni(gen); // ln(avg_L) = mu + 0.5 sig^2
         //2.0 + 2.0 * rand_uni(gen);  // ln(avg_L) = mu + 0.5 sig^2
-        lnLsig = 0.75 + 0.1 * rand_uni(gen); // [0.75,0.85] corresponds to roughly [1.75,2.06] PDI
+        lnLsig = 0.65 + 0.2 * rand_uni(gen); // [0.65,0.85] corresponds to roughly [1.75,2.06] PDI
         //Epar.Kt = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
         Epar.Kt = 20 + 20 * rand_uni(gen);
         //Epar.Kb = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
@@ -61,9 +61,9 @@ inner_structure biaxial_polymer::calc_rand_ut_vt_alpha(std::vector<double> u, st
     }
     else if (segment_type == "inplane_twist")
     {
-        // 2D canal, 51 degree in plane twist of ut and vt
-        //double alpha = 51.0 / 180.0 * M_PI; // to-be-determined
-        double alpha = 0.92839110145; // or 53.1928918506 degree, read from energy minimization calculation
+        // 2D canal, 55 degree in plane twist of ut and vt
+        double alpha = 55.0 / 180.0 * M_PI; // to-be-determined
+        //double alpha = 0.92839110145; // or 53.1928918506 degree, read from energy minimization calculation
 
         double cos_alpha, sin_alpha;
         if (rand_uni(gen) < Rf && alpha_pre > 0)
@@ -83,8 +83,8 @@ inner_structure biaxial_polymer::calc_rand_ut_vt_alpha(std::vector<double> u, st
     else if (segment_type == "outofplane_twist")
     {
         // 2D canal, 51 degree out of plane twist of ut and vt
-        //double alpha = 51.0 / 180.0 * M_PI;
-        double alpha = 0.92839110145;  // or 53.1928918506 degree, read from energy minimization calculation
+        double alpha = 55.0 / 180.0 * M_PI;
+        //double alpha = 0.92839110145;  // or 53.1928918506 degree, read from energy minimization calculation
         double cos_alpha, sin_alpha;
         if (rand_uni(gen) < Rf && alpha_pre > 0)
         {
@@ -468,8 +468,8 @@ observable biaxial_polymer::measure_observable(int bin_num)
     */
     obs.Rg2 = calc_radius_of_gyration_square();
 
-    double qB_i = 1e-3; // 0.2*M_PI/L; //0.1/L; ;
-    double qB_f = 1e0;  // M_PI;//100.0/L; //M_PI;
+    double qB_i = 0.07; // 0.2*M_PI/L; //0.1/L; ;
+    double qB_f = 4;  // M_PI;//100.0/L; //M_PI;
     obs.SqB = calc_structure_factor(qB_i, qB_f, bin_num);
 
     obs.qB = std::vector<double>(bin_num, 0);
