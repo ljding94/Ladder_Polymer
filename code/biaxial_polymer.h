@@ -70,6 +70,7 @@ public:
 
     Energy_parameter Epar;
     double Rf; // flip rate
+    double abs_alpha; // absolute value of alpha for preferred bending
     std::vector<segment> polymer; // the polymer
     //observable obs; // obserrable
 
@@ -81,7 +82,7 @@ public:
     std::vector<double> rand_uni_vec(); // generate a random unit vector
 
     // initialization
-    biaxial_polymer(std::string segment_type_, double beta_, double lnLmu_, double lnLsig_, Energy_parameter Epar_, double Rf_, bool rand_param = false);
+    biaxial_polymer(std::string segment_type_, double beta_, double lnLmu_, double lnLsig_, Energy_parameter Epar_, double Rf_, double abs_alpha_, bool rand_param = false);
     // for direct sampling
 
     // check self-avoid condition

@@ -7,7 +7,7 @@
 // #define PI 3.14159265358979323846
 
 // initialization
-biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double lnLmu_, double lnLsig_, Energy_parameter Epar_, double Rf_, bool rand_param)
+biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double lnLmu_, double lnLsig_, Energy_parameter Epar_, double Rf_, double abs_alpha_, bool rand_param)
 {
     // system related
     segment_type = segment_type_;
@@ -19,6 +19,7 @@ biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double
     Epar.Kt = Epar_.Kt;
     Epar.Kb = Epar_.Kb;
     Rf = Rf_;
+    abs_alpha = abs_alpha_;
 
     // set random number generators
     std::random_device rd;
@@ -33,16 +34,20 @@ biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double
     if (rand_param)
     {
         // randomize parameters Lmu, Lsig etc
-        lnLmu = 2.0 +  2.0*rand_uni(gen); // ln(avg_L) = mu + 0.5 sig^2
+        lnLmu = 1.3 +  2.0*rand_uni(gen); // ln(avg_L) = mu + 0.5 sig^2
         //2.0 + 2.0 * rand_uni(gen);  // ln(avg_L) = mu + 0.5 sig^2
         lnLsig = 0.65 + 0.2 * rand_uni(gen); // [0.65,0.85] corresponds to roughly [1.75,2.06] PDI
         //Epar.Kt = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
         Epar.Kt = 20 + 20 * rand_uni(gen);
         //Epar.Kb = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
         Epar.Kb = 20 + 20 * rand_uni(gen);
-        Rf = 0.4 + 0.4 * rand_uni(gen);
+        Rf = 0.3 + 0.5 * rand_uni(gen);
+
+        abs_alpha = 47.5 + 10*rand_uni(gen);  // let prefered angle from 47.5 to 57.5 degree
+        abs_alpha = abs_alpha / 180.0 * M_PI; // convert to radian
     }
-    std::cout << "setting system param:" << "lnLmu:" << lnLmu << ", lnLsig:" << lnLsig << ", Kt:" << Epar.Kt << ", Kb:" << Epar.Kb << ", Rf:" << Rf << "\n";
+    std::cout << "setting system param:" << "lnLmu:" << lnLmu << ", lnLsig:" << lnLsig
+            << ", Kt:" << Epar.Kt << ", Kb:" << Epar.Kb << ", Rf:" << Rf << "abs_alpha (degree)"<< abs_alpha*180/M_PI << "\n";
 }
 
 inner_structure biaxial_polymer::calc_rand_ut_vt_alpha(std::vector<double> u, std::vector<double> v, double alpha_pre, double Rf)
@@ -62,9 +67,9 @@ inner_structure biaxial_polymer::calc_rand_ut_vt_alpha(std::vector<double> u, st
     else if (segment_type == "inplane_twist")
     {
         // 2D canal, 55 degree in plane twist of ut and vt
-        double alpha = 55.0 / 180.0 * M_PI; // to-be-determined
+        //double alpha = 55.0 / 180.0 * M_PI; // to-be-determined
         //double alpha = 0.92839110145; // or 53.1928918506 degree, read from energy minimization calculation
-
+        double alpha = abs_alpha;
         double cos_alpha, sin_alpha;
         if (rand_uni(gen) < Rf && alpha_pre > 0)
         {
@@ -83,8 +88,10 @@ inner_structure biaxial_polymer::calc_rand_ut_vt_alpha(std::vector<double> u, st
     else if (segment_type == "outofplane_twist")
     {
         // 2D canal, 51 degree out of plane twist of ut and vt
-        double alpha = 55.0 / 180.0 * M_PI;
+        // double alpha = 55.0 / 180.0 * M_PI;
         //double alpha = 0.92839110145;  // or 53.1928918506 degree, read from energy minimization calculation
+        double alpha = abs_alpha;
+
         double cos_alpha, sin_alpha;
         if (rand_uni(gen) < Rf && alpha_pre > 0)
         {
@@ -390,16 +397,16 @@ void biaxial_polymer::save_L_weighted_Sq_to_file(std::string filename, std::vect
             }
 
             // write stats to the file
-            f << "stats,segment_type,lnLmu,lnLsig,Kt,Kb,Rf,Rg2,wRg2,L,L2,SqB_array\n";
+            f << "stats,segment_type,lnLmu,lnLsig,Kt,Kb,Rf,abs_alpha,Rg2,wRg2,L,L2,SqB_array\n";
             f << "mean" << "," << segment_type << "," << lnLmu << "," << lnLsig << "," << Epar.Kt << "," << Epar.Kb
-            << "," << Rf << "," << avg_Rg2 << "," << avg_weighted_Rg2
+            << "," << Rf << "," << abs_alpha << ","  << avg_Rg2 << "," << avg_weighted_Rg2
             << "," << avg_L << "," << avg_L2;
             for (int j = 0; j < avg_weighted_SqB.size(); j++)
             {
                 f << "," << avg_weighted_SqB[j];
             }
             f << "\nstd_dev/sqrt(number of polymer)";
-            f << "\nr or qB " << ",NA, NA, NA, NA, NA, NA, NA, NA, NA, NA";
+            f << "\nr or qB " << ",NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA";
             for (int i = 0; i < obs_ensemble[0].qB.size(); i++)
             {
                 f << "," << obs_ensemble[0].qB[i];

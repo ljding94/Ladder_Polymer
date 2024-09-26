@@ -75,7 +75,6 @@ def plot_experimental_Sq():
     plt.savefig(f"{folder}/merged_incoh_L2_Iq_subtracted_interpolated.png")
     plt.show()
 
-
     for n in [50, 55, 60, 65]:
         popt, perr = fit_Guinier(QBnew[:n], I_interp[:n], dI_interp[:n])
         print("popt", popt)
@@ -89,5 +88,8 @@ def plot_experimental_Sq():
         plt.legend()
         plt.grid(True, which='both', ls='--', linewidth=0.5)
         plt.tight_layout()
+        output_filename = f"{folder}/merged_incoh_L2_Iq_subtracted_interpolated_Guinier_fit_n{n}_normalized_Iq.txt"
+        np.savetxt(output_filename, np.column_stack((QBnew, I_interp/popt[0], dI_interp/popt[0])),
+                   header="QBnew,I_interp,dI_interp", delimiter=",", comments='')
         plt.savefig(f"{folder}/merged_incoh_L2_Iq_subtracted_interpolated_Guinier_fit_n{n}.png")
         plt.show()

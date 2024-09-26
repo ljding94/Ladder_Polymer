@@ -1025,5 +1025,6 @@ def plot_molecule_structure_model_demo(tex_lw=240.71031, ppi=72):
 
     plt.tight_layout(pad=0)
     plt.savefig("./figures/model_demo.pdf", format="pdf")
+    plt.savefig("./figures/model_demo.png", dpi= 300)
     plt.show()
     plt.close()

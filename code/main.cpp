@@ -38,8 +38,9 @@ int main(int argc, char const *argv[])
         Epar.Kb = std::atof(argv[5]); // Ib = Kb/L ~ normalized persistence length logIb = log_10(Ib)
         //Epar.Kb = std::pow(10, logKb);
         double Rf = std::atof(argv[6]); // flip rate average if segment type is twist
+        double abs_alpha = 51/180.0*M_PI; // preferred bending angle
 
-        biaxial_polymer polymer(segment_type, beta, lnLmu, lnLsig, Epar, Rf);
+        biaxial_polymer polymer(segment_type, beta, lnLmu, lnLsig, Epar, Rf, abs_alpha);
         std::string finfo = std::string(argv[1]) + "_lnLmu" + std::string(argv[2]) + "_lnLsig" + std::string(argv[3]) + "_Kt" + std::string(argv[4]) + "_Kb" + std::string(argv[5]) + "_Rf" + std::string(argv[6]);
 
         int number_of_polymer;
@@ -104,7 +105,7 @@ int main(int argc, char const *argv[])
         }
 
         // single cluster job can run multiple processes
-        biaxial_polymer polymer(segment_type, beta, 1, 1, Epar, 1, true);
+        biaxial_polymer polymer(segment_type, beta, 1, 1, Epar, 1, 1, true);
         std::string finfo = std::string(argv[1]) + "_random_run" + std::to_string(run_num);
         polymer.generate_polymer();
         // polymer.save_polymer_to_file(folder + "/config_" + finfo + ".csv"); // save sample polymer
