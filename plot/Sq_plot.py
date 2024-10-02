@@ -63,6 +63,41 @@ def read_Delta_Sq_data(folder, parameters, L0=200):
     return segment_type, np.array(all_features), all_Sq, all_Delta_Sq, all_Delta_Sq_err, q
 
 
+def read_Sq_data(folder, parameters):
+    # normalized againt L0
+    all_features = []
+    all_Sq = []
+    all_Sq_err = []
+    q = []
+    all_filename = []
+    if len(parameters[0]) == 2:
+        for segment_type, run_num in parameters:
+            all_filename.append(f"{folder}/obs_{segment_type}_random_run{run_num}_SqB.csv")
+    else:
+        for segment_type, lnLmu, lnLsig, Kt, Kb, Rf, alpha in parameters:
+            all_filename.append(f"{folder}/obs_MC_{segment_type}_lnLmu{lnLmu:.2f}_lnLsig{lnLsig:.0f}_Kt{Kt:.0f}_Kb{Kb:.0f}_Rf{Rf:.1f}_alpha{alpha:.0f}_SqB.csv")
+
+    for filename in all_filename:
+        if os.path.exists(filename):
+            Sqdata = np.genfromtxt(filename, delimiter=',', skip_header=1, max_rows=1)
+            if len(Sqdata) == 0:
+                print(f"Warning: File {filename} is empty. Skiped")
+                continue
+            features = Sqdata[2: 12]
+            features = np.insert(features, 10, features[9]/(features[8]*features[8]))
+            qdata = np.genfromtxt(filename, delimiter=',', skip_header=3, max_rows=1)
+            Sq, q = Sqdata[12:], qdata[12:]
+
+            all_features.append(features)
+            all_Sq.append(Sq)
+        else:
+            print(f"Warning: File {filename} not found. Skiped")
+
+    # print("all_Sq.shape", np.array(all_Sq).shape)
+    all_feature_names = ["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "alpha", "Rg2", "wRg2", "L", "L2", "PDI"]
+    return segment_type, np.array(all_features), all_feature_names, all_Sq, all_Sq_err, q
+
+
 def read_Delta_Sq_data_detail(folder, parameter):
     all_L = []
     all_Sq = []
@@ -82,7 +117,149 @@ def read_Delta_Sq_data_detail(folder, parameter):
     return q, all_L, all_Sq
 
 
-def plot_polymer_Sq(tex_lw=240.71031, ppi=72):
+def plot_monodisperse_polymer_Sq(tex_lw=240.71031, ppi=72):
+
+    # map Rf and L to line color and style
+    # LS = {50: "-", 70: "--", 90: "-."}
+    # LC = {0.4: "tomato", 0.5: "lawngreen", 0.6: "steelblue"}  # black for hard rod
+    colors = ["tomato", "gold", "lawngreen", "steelblue"]
+    segment_type_map = {"outofplane_twist": "2D CANAL", "inplane_twist": "3D CANAL"}
+
+    folder = "../data/scratch_local/20241002"
+    fig = plt.figure(figsize=(tex_lw / ppi * 1.0, tex_lw / ppi * 0.9))
+    plt.rc("text", usetex=True)
+    plt.rc("text.latex", preamble=r"\usepackage{physics}")
+    axs = fig.subplots(2, 2, sharex=True, sharey=True)
+
+    # plot variation of L
+    parameters = [["outofplane_twist", 1.61, 0, 100, 100, 0.5, 50],
+                  ["outofplane_twist", 2.31, 0, 100, 100, 0.5, 50],
+                  ["outofplane_twist", 3.00, 0, 100, 100, 0.5, 50],
+                  ["outofplane_twist", 3.69, 0, 100, 100, 0.5, 50]]
+
+    segment_type, all_features, all_feature_names, all_Sq, all_Sq_err, q = read_Sq_data(folder, parameters)
+    Sq_rod_L40 = calc_Sq_discrete_infinite_thin_rod(q, 40)
+    #ax_inset00 = axs[0, 0].inset_axes([0.05, 0.15, 0.3, 0.3])
+    for i in range(len(parameters)):
+        segment_type, lnLmu, lnLsig, Kt, Kb, Rf, alpha = parameters[i]
+        L = all_features[i][8]
+        axs[0, 0].loglog(q, all_Sq[i], "-", lw=1, color=colors[i], label=rf"${L:.0f}$")
+        #ax_inset00.semilogx(q, np.log(all_Sq[i])-np.log(Sq_rod_L40), "-", lw=1, color=colors[i], label=rf"${L:.0f}$")
+    axs[0, 0].legend(title=r"$L$", loc="lower left", ncol=2, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
+
+    # plot variation of Rf
+    parameters = [["outofplane_twist", 3.00, 0, 100, 100, 0.4, 50],
+                  ["outofplane_twist", 3.00, 0, 100, 100, 0.5, 50],
+                  ["outofplane_twist", 3.00, 0, 100, 100, 0.6, 50],
+                  ["outofplane_twist", 3.00, 0, 100, 100, 0.7, 50]]
+
+    segment_type, all_features, all_feature_names, all_Sq, all_Sq_err, q = read_Sq_data(folder, parameters)
+    #ax_inset01 = axs[0, 1].inset_axes([0.15, 0.15, 0.4, 0.4])
+    #ax_inset01.tick_params(which="both", direction="in", top="on", right="on", labelbottom=False, labelleft=True, labelsize=7)
+    #ax_inset01.set_ylabel(r"$\Delta S(QB)$", fontsize=7)
+    for i in range(len(parameters)):
+        segment_type, lnLmu, lnLsig, Kt, Kb, Rf, alpha = parameters[i]
+        L = all_features[i][8]
+        axs[0, 1].loglog(q, all_Sq[i], "-", lw=1, color=colors[i], label=rf"${Rf:.1f}$")
+        #ax_inset01.semilogx(q, np.log(all_Sq[i])-np.log(Sq_rod_L40), "-", lw=1, color=colors[i], label=rf"${L:.0f}$")
+
+    axs[0, 1].legend(title=r"$R_f$", loc="lower left", ncol=2, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
+
+
+    # plot variation of alpha
+
+    parameters = [["outofplane_twist", 3.00, 0, 100, 100, 0.5, 40],
+                  ["outofplane_twist", 3.00, 0, 100, 100, 0.5, 50],
+                  ["outofplane_twist", 3.00, 0, 100, 100, 0.5, 60],
+                  ["outofplane_twist", 3.00, 0, 100, 100, 0.5, 70]]
+
+    segment_type, all_features, all_feature_names, all_Sq, all_Sq_err, q = read_Sq_data(folder, parameters)
+
+    for i in range(len(parameters)):
+        segment_type, lnLmu, lnLsig, Kt, Kb, Rf, alpha = parameters[i]
+        L = all_features[i][8]
+        axs[1, 0].loglog(q, all_Sq[i], "-", lw=1, color=colors[i], label=rf"${alpha:.0f}^\circ$")
+    axs[1, 0].legend(title=r"$\alpha$", loc="lower left", ncol=2, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
+
+    # plot variation of K
+    parameters = [["outofplane_twist", 3.00, 0, 50, 50, 0.5, 50],
+                  ["outofplane_twist", 3.00, 0, 100, 100, 0.5, 50],
+                  ["outofplane_twist", 3.00, 0, 150, 150, 0.5, 50]]
+
+    segment_type, all_features, all_feature_names, all_Sq, all_Sq_err, q = read_Sq_data(folder, parameters)
+    for i in range(len(parameters)):
+        segment_type, lnLmu, lnLsig, Kt, Kb, Rf, alpha = parameters[i]
+        L = all_features[i][8]
+        axs[1, 1].loglog(q, all_Sq[i], "-", lw=1, color=colors[i], label=rf"${Kb:.0f}$")
+    axs[1, 1].legend(title=r"$K_B = K_t$", loc="lower left", ncol=2, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
+
+    #axs[0,0].set_ylim(1e-2, 1.1)
+    axs[0, 0].tick_params(which="both", direction="in", top="on", right="on", labelbottom=False, labelleft=True, labelsize=7)
+    axs[0, 0].set_ylabel(r"$S(QB)$", fontsize=9)
+    axs[0, 1].tick_params(which="both", direction="in", top="on", right="on", labelbottom=False, labelleft=False, labelsize=7)
+    axs[1, 0].tick_params(which="both", direction="in", top="on", right="on", labelbottom=True, labelleft=True, labelsize=7)
+    axs[1, 0].set_ylabel(r"$S(QB)$", fontsize=9)
+    axs[1, 0].set_xlabel(r"$QB$", fontsize=9)
+    axs[1, 1].tick_params(which="both", direction="in", top="on", right="on", labelbottom=True, labelleft=False, labelsize=7)
+    axs[1, 1].set_xlabel(r"$QB$", fontsize=9)
+
+    '''
+    parameters = [["outofplane_twist", 3.0, 0.5, 20.0, 20.0, 0.400],
+                  ["outofplane_twist", 3.0, 0.5, 20.0, 20.0, 0.500],
+                  ["outofplane_twist", 3.0, 0.5, 20.0, 20.0, 0.600],
+                  ["outofplane_twist", 3.0, 0.5, 20.0, 20.0, 0.700]]
+
+    segment_type, all_features, all_Sq, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
+    print("np.shape(all_Sq)", np.shape(all_Sq))
+
+    for i in range(len(parameters)):
+        segment_type, lnLmu, lnLsig, Kt, Kb, Rf = parameters[i]
+        axs[0, 1].semilogx(q, all_Sq[i], "-", lw=1, color=colors[i], label=rf"${Rf}$")
+    axs[0, 1].tick_params(which="both", direction="in", top="on", right="on", labelbottom=False, labelleft=False, labelsize=7)
+    # axs[0, 1].set_ylabel(r"$\Delta S(QB)$", fontsize=10)
+    axs[0, 1].legend(title=r"$R_f$", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
+
+    # plot variation of lnLmu
+
+    parameters = [["outofplane_twist", 2.5, 0.5, 20.0, 20.0, 0.500],
+                  ["outofplane_twist", 3.0, 0.5, 20.0, 20.0, 0.500],
+                  ["outofplane_twist", 3.5, 0.5, 20.0, 20.0, 0.500]]
+
+    # all_features, all_Sq, all_Sq_rod, all_Delta_Sq, q = read_Sq_data(folder, parameters)
+    segment_type, all_features, all_Sq, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
+
+    for i in range(len(parameters)):
+        segment_type, lnLmu, lnLsig, Kt, Kb, Rf = parameters[i]
+        axs[1, 0].semilogx(q, all_Sq[i], "-", lw=1, color=colors[i], label=rf"${lnLmu}$")
+    axs[1, 0].tick_params(which="both", direction="in", top="on", right="on", labelbottom=True, labelleft=True, labelsize=7)
+    axs[1, 0].set_xlabel(r"$QB$", fontsize=9, labelpad=0)
+    axs[1, 0].set_ylabel(r"$I(QB)$", fontsize=9, labelpad=0)
+    axs[1, 0].legend(title=r"$\mu_{(\ln{L})}$", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
+
+    # plot variaotion of siglnL
+    parameters = [["outofplane_twist", 3.0, 0.5, 20.0, 20.0, 0.500],
+                  ["outofplane_twist", 3.0, 0.7, 20.0, 20.0, 0.500],
+                  ["outofplane_twist", 3.0, 0.9, 20.0, 20.0, 0.500]]
+
+    segment_type, all_features, all_Sq, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
+    for i in range(len(parameters)):
+        segment_type, lnLmu, lnLsig, Kt, Kb, Rf = parameters[i]
+        axs[1, 1].semilogx(q, all_Sq[i], "-", lw=1, color=colors[i], label=f"{lnLsig:.1f}")
+    axs[1, 1].tick_params(which="both", direction="in", top="on", right="on", labelbottom=True, labelleft=False, labelsize=7)
+    axs[1, 1].set_xlabel(r"$QB$", fontsize=9, labelpad=0)
+    # axs[1, 1].set_ylabel(r"$S\Delta (QB)$", fontsize=10)
+    axs[1, 1].legend(title=r"$\sigma_{(\ln{L})}$", ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.5, frameon=False, fontsize=9)
+    # axs[1, 1].legend(ncol=1, columnspacing=0.5, handlelength=0.5, handletextpad=0.1, frameon=False, fontsize=10)
+    '''
+
+    plt.tight_layout(pad=0.15)
+    # plt.show()
+    plt.savefig("figures/Sq_monodisperse.pdf", format="pdf")
+    plt.show()
+    plt.close()
+
+
+def plot_polydisperse_polymer_Sq(tex_lw=240.71031, ppi=72):
 
     # map Rf and L to line color and style
     # LS = {50: "-", 70: "--", 90: "-."}

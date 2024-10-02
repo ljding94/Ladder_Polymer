@@ -34,19 +34,21 @@ biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double
     if (rand_param)
     {
         // randomize parameters Lmu, Lsig etc
-        lnLmu = 1.3 +  2.0*rand_uni(gen); // ln(avg_L) = mu + 0.5 sig^2
+        lnLmu = std::log(4+46*rand_uni(gen)); //1.3 +  2.0*rand_uni(gen); // ln(avg_L) = mu + 0.5 sig^2
         //2.0 + 2.0 * rand_uni(gen);  // ln(avg_L) = mu + 0.5 sig^2
-        lnLsig = 0.65 + 0.2 * rand_uni(gen); // [0.65,0.85] corresponds to roughly [1.75,2.06] PDI
+        lnLsig = 0;
+        //lnLsig = 0.65 + 0.2 * rand_uni(gen); // [0.65,0.85] corresponds to roughly [1.75,2.06] PDI
         //Epar.Kt = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
-        Epar.Kt = 20 + 20 * rand_uni(gen);
+        Epar.Kt = 50 + 100 * rand_uni(gen);
         //Epar.Kb = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
-        Epar.Kb = 20 + 20 * rand_uni(gen);
+        //Epar.Kb = 50 + 100 * rand_uni(gen);
+        Epar.Kb = Epar.Kt;
         Rf = 0.3 + 0.5 * rand_uni(gen);
 
-        abs_alpha = 47.5 + 10*rand_uni(gen);  // let prefered angle from 47.5 to 57.5 degree
+        abs_alpha = 40 + 30*rand_uni(gen);  // let prefered angle from 47.5 to 57.5 degree
         abs_alpha = abs_alpha / 180.0 * M_PI; // convert to radian
     }
-    std::cout << "setting system param:" << "lnLmu:" << lnLmu << ", lnLsig:" << lnLsig
+    std::cout << "setting system param:" << "lnLmu:" << lnLmu << ", L:"<< int(std::exp(lnLmu)) << ", lnLsig:" << lnLsig
             << ", Kt:" << Epar.Kt << ", Kb:" << Epar.Kb << ", Rf:" << Rf << "abs_alpha (degree)"<< abs_alpha*180/M_PI << "\n";
 }
 
@@ -148,7 +150,8 @@ void biaxial_polymer::reset_polymer()
         }
         else if (segment_type == "outofplane_twist")
         {
-            polymer[i].scattering_points = {{0, 0}};
+            //polymer[i].scattering_points = {{0, 0}};
+            polymer[i].scattering_points = {{0, -0.1},{0, 0.1},{0.2, -0.1},{0.2, 0.1},{0.4, -0.1},{0.4, 0.1},{0.6, -0.1},{0.6, 0.1},{0.8, -0.1},{0.8, 0.1}};
         }
         else
         {

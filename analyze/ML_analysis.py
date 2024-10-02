@@ -88,13 +88,13 @@ def read_Sq_data(folder, parameters):
             if len(Sqdata) == 0:
                 print(f"Warning: File {filename} is empty. Skiped")
                 continue
-            features = Sqdata[2: 11]
-            features = np.insert(features, 9, features[8]/(features[7]*features[7]))  # add L^2/(L)^2 = PDI
-            # print(["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "Rg2", "wRg2", "L", r"$L^2$", "PDI"])
+            features = Sqdata[2: 12]
+            features = np.insert(features, 10, features[9]/(features[8]*features[8]))  # add L^2/(L)^2 = PDI
+            # print(["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "alpha","Rg2", "wRg2", "L", r"$L^2$", "PDI"])
             # print("features", features)
             # Sq, Sq_err, q = Sqdata[0, 8:], Sqdata[1, 8:], Sqdata[2, 8:]
             qdata = np.genfromtxt(filename, delimiter=',', skip_header=3, max_rows=1)
-            Sq, q = Sqdata[11:], qdata[11:]
+            Sq, q = Sqdata[12:], qdata[12:]
 
             # Delta_Sq = Sq
             # Delta_Sq_err = Sq_err/Sq_rod_discrete
@@ -104,15 +104,15 @@ def read_Sq_data(folder, parameters):
         else:
             print(f"Warning: File {filename} not found. Skiped")
     print("all_Sq.shape", np.array(all_Sq).shape)
-    all_feature_names = ["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "Rg2", "wRg2", "L", "L2", "PDI"]
+    all_feature_names = ["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "alpha","Rg2", "wRg2", "L", "L2", "PDI"]
     return segment_type, np.array(all_features), all_feature_names, all_Sq, all_Sq_err, q
 
 
 def plot_svd(folder, parameters):
     # segment_type, all_features, all_feature_names, all_Delta_Sq, all_Delta_Sq_err, q = read_Delta_Sq_data(folder, parameters)
     segment_type, all_features, all_feature_names, all_Sq, all_Sq_err, q = read_Sq_data(folder, parameters)
-    # all_lnSq = np.log(all_Sq)
-    all_lnSq = all_Sq
+    all_lnSq = np.log(all_Sq)
+    #all_lnSq = all_Sq
     print("all_features shape:", np.array(all_features).shape)
 
     print("np.array(all_Delta_Sq).shape", np.array(all_lnSq).shape)
@@ -150,7 +150,7 @@ def plot_svd(folder, parameters):
     axs = [fig.add_subplot(2, len(all_feature_names)//2 + 1, i+1, projection='3d') for i in range(len(all_feature_names))]
     for i in range(len(all_feature_names)):
         print("plotting feature:", all_feature_names[i], all_features[:, i].min(), all_features[:, i].max())
-        scatter = axs[i].scatter(all_lnSqV[:, 0], all_lnSqV[:, 1], all_lnSqV[:, 2], c=all_features[:, i], cmap="jet_r", s=2)
+        scatter = axs[i].scatter(all_lnSqV[:, 0], all_lnSqV[:, 1], all_lnSqV[:, 2], c=all_features[:, i], cmap="jet_r", s=0.5)
         axs[i].set_xlabel("V[0]")
         axs[i].set_ylabel("V[1]")
         axs[i].set_zlabel("V[2]")
@@ -322,13 +322,14 @@ def GaussianProcess_optimization(folder, parameters_train):
     # for log Sq
 
     outofplane_theta_per_feature = {  # "Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
-        #"lnLmu": (np.logspace(-1, 1, grid_size), np.logspace(-3, -1, grid_size)), # done
-        #"lnLsig": (np.logspace(-1, 1, grid_size), np.logspace(-1, 1, grid_size)), # done
-        #"L": (np.logspace(-1, 1, grid_size), np.logspace(-4, -1, grid_size)), # done
-        #"PDI": (np.logspace(-1, 1, grid_size), np.logspace(-2, 0, grid_size)),
-        #"Rf": (np.logspace(-1, 1, grid_size), np.logspace(-4, -2, grid_size)), #done
-        "Rg2": (np.logspace(-1, 1, grid_size), np.logspace(-3, -1, grid_size)), #
+        #"lnLmu": (np.logspace(-1, 1, grid_size), np.logspace(-3, -1, grid_size)),
+        #"lnLsig": (np.logspace(-1, 1, grid_size), np.logspace(-1, 1, grid_size)),
+        "Rf": (np.logspace(-1, 1, grid_size), np.logspace(-4, -2, grid_size)),
+        #"alpha": (np.logspace(-1, 1, grid_size), np.logspace(-4, -2, grid_size)), # done
+        #"Rg2": (np.logspace(0, 1, grid_size), np.logspace(-10, -6, grid_size)), #
         #"wRg2": (np.logspace(-2, 0, grid_size), np.logspace(-5, -2, grid_size)), #
+        #"L": (np.logspace(-2, 2, grid_size), np.logspace(-8, -6, grid_size)),
+        #"PDI": (np.logspace(-1, 1, grid_size), np.logspace(-2, 0, grid_size)),
     }
 
 
@@ -424,7 +425,7 @@ def GaussianProcess_optimization(folder, parameters_train):
 
 
 def read_gp_and_feature_stats(folder, segment_type):
-    all_feature_names = ["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "Rg2", "wRg2", "L", "L2", "PDI"]
+    all_feature_names = ["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "alpha", "Rg2", "wRg2", "L", "L2", "PDI"]
     all_feature_mean = np.genfromtxt(f"{folder}/data_{segment_type}_feature_avg_std.txt", delimiter=',', skip_header=1, usecols=1)
     all_feature_std = np.genfromtxt(f"{folder}/data_{segment_type}_feature_avg_std.txt", delimiter=',', skip_header=1, usecols=2)
     all_gp_per_feature = {}
@@ -492,7 +493,7 @@ def GaussianProcess_experiment_data_analysis(exp_filename, all_feature_mean, all
 
     I_exp = np.maximum(I_exp, 1)
 
-    all_feature_names = ["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "Rg2", "wRg2", "L", "L2", "PDI"]
+    all_feature_names = ["lnLmu", "lnLsig", "Kt", "Kb", "Rf", "alpha", "Rg2", "wRg2", "L", "L2", "PDI"]
     plt.figure()
     for feature_name, gp in all_gp_per_feature.items():
         feature_index = all_feature_names.index(feature_name)

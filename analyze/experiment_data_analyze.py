@@ -4,11 +4,24 @@ import scipy
 
 
 def Guinier_fit(q, A, Rg2):
-    return A*(1 - q**2*Rg2/3)
+    return A*np.exp(-q**2*Rg2/3)
+
+    # (1 - q**2*Rg2/3)
 
 
 def fit_Guinier(Q, Sq, Sqerr):
     popt, pcov = scipy.optimize.curve_fit(Guinier_fit, Q, Sq, sigma=Sqerr, absolute_sigma=True)
+    perr = np.sqrt(np.diag(pcov))
+    return popt, perr
+
+
+def Gaussian_chain_fit(q, A, Rg2):
+    ans = 2*(q*q*Rg2 - 1 + np.exp(-q*q*Rg2)) / (q*q*Rg2)**2
+    return A*ans
+
+
+def fit_Gaussian_chain(Q, Sq, Sqerr):
+    popt, pcov = scipy.optimize.curve_fit(Gaussian_chain_fit, Q, Sq, sigma=Sqerr, absolute_sigma=True)
     perr = np.sqrt(np.diag(pcov))
     return popt, perr
 
@@ -75,7 +88,8 @@ def plot_experimental_Sq():
     plt.savefig(f"{folder}/merged_incoh_L2_Iq_subtracted_interpolated.png")
     plt.show()
 
-    for n in [50, 55, 60, 65]:
+    '''
+    for n in [50, 55, 60, 65, 70, 75, 80]:
         popt, perr = fit_Guinier(QBnew[:n], I_interp[:n], dI_interp[:n])
         print("popt", popt)
         print("perr", perr)
@@ -92,4 +106,24 @@ def plot_experimental_Sq():
         np.savetxt(output_filename, np.column_stack((QBnew, I_interp/popt[0], dI_interp/popt[0])),
                    header="QBnew,I_interp,dI_interp", delimiter=",", comments='')
         plt.savefig(f"{folder}/merged_incoh_L2_Iq_subtracted_interpolated_Guinier_fit_n{n}.png")
+        plt.show()
+    '''
+
+    for n in [50, 55, 60, 65, 70, 75, 80]:
+        popt, perr = fit_Gaussian_chain(QBnew[:n], I_interp[:n], dI_interp[:n])
+        print("popt", popt)
+        print("perr", perr)
+        plt.figure()
+        plt.errorbar(QBnew, I_interp, yerr=dI_interp, color="blue", linestyle='None')
+        plt.loglog(QBnew[:n], Gaussian_chain_fit(QBnew[:n], *popt), label='Subtracted, interpolated, Gaussian_chain fitted', marker='None', color="tomato", linestyle='-', linewidth=2)
+        plt.title(f"Rg2={(popt[1]):.4f}±{perr[1]:.4f}, A = {(popt[0]):.4f}±{perr[0]:.4f}")
+        plt.xlabel('QB', fontsize=14)
+        plt.ylabel('Intensity (cm⁻¹)', fontsize=14)
+        plt.legend()
+        plt.grid(True, which='both', ls='--', linewidth=0.5)
+        plt.tight_layout()
+        output_filename = f"{folder}/merged_incoh_L2_Iq_subtracted_interpolated_Gaussian_Chain_fit_n{n}_normalized_Iq.txt"
+        np.savetxt(output_filename, np.column_stack((QBnew, I_interp/popt[0], dI_interp/popt[0])),
+                   header="QBnew,I_interp,dI_interp", delimiter=",", comments='')
+        plt.savefig(f"{folder}/merged_incoh_L2_Iq_subtracted_interpolated_Gaussian_chain_fit_n{n}.png")
         plt.show()

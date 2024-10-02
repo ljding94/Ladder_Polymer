@@ -7,14 +7,16 @@ from GPR_plot import *
 
 def main():
 
-    plot_molecule_structure_model_demo()
+    #plot_molecule_structure_model_demo()
 
     #plot_config_demo()
     #plot_flipping_demo()
 
 
 
+    plot_monodisperse_polymer_Sq()
     #plot_polymer_Sq()
+
     #plot_SVD_feature_data()
     #plot_GPR_data()
     #plot_PDDF_ACF_LML_data()

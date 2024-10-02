@@ -28,7 +28,7 @@ int main(int argc, char const *argv[])
     }
 
     // precision run with specified parameters
-    if (argc == 8 || argc == 7)
+    if (argc == 9 || argc == 8)
     {
         std::string segment_type = argv[1];
         double lnLmu = std::atof(argv[2]);
@@ -38,23 +38,23 @@ int main(int argc, char const *argv[])
         Epar.Kb = std::atof(argv[5]); // Ib = Kb/L ~ normalized persistence length logIb = log_10(Ib)
         //Epar.Kb = std::pow(10, logKb);
         double Rf = std::atof(argv[6]); // flip rate average if segment type is twist
-        double abs_alpha = 51/180.0*M_PI; // preferred bending angle
+        double abs_alpha = std::atof(argv[7])/180.0*M_PI; // preferred bending angle
 
         biaxial_polymer polymer(segment_type, beta, lnLmu, lnLsig, Epar, Rf, abs_alpha);
-        std::string finfo = std::string(argv[1]) + "_lnLmu" + std::string(argv[2]) + "_lnLsig" + std::string(argv[3]) + "_Kt" + std::string(argv[4]) + "_Kb" + std::string(argv[5]) + "_Rf" + std::string(argv[6]);
+        std::string finfo = std::string(argv[1]) + "_lnLmu" + std::string(argv[2]) + "_lnLsig" + std::string(argv[3]) + "_Kt" + std::string(argv[4]) + "_Kb" + std::string(argv[5]) + "_Rf" + std::string(argv[6])+ "_alpha" + std::string(argv[7]);
 
         int number_of_polymer;
         int bin_num;
-        if(argc == 8)
+        if(argc == 9)
         {
-            number_of_polymer = 10000;
+            number_of_polymer = 2000;
             bin_num = 100;
             // use "prog name par* local" for local running
             // used for local running!
             std::cout << "running on local machine\n";
             folder = "../data/scratch_local/" + today;
         } else {
-            number_of_polymer = 10000;
+            number_of_polymer = 2000;
             bin_num = 100;
             // running on cluster
             std::cout << "running on cluster\n";
@@ -86,12 +86,12 @@ int main(int argc, char const *argv[])
 
         if(argc==4)
         {
-            number_of_polymer = 10000;
+            number_of_polymer = 2000;
             bin_num = 100;
             std::cout << "running on local machine\n";
             folder = "../data/scratch_local/" + today;
         } else {
-            number_of_polymer = 10000;
+            number_of_polymer = 2000;
             bin_num = 100;
             // running on cluster
             std::cout << "running on cluster\n";
