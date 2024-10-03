@@ -45,7 +45,7 @@ def plot_SVD_data(tex_lw=240.71031, ppi=72):
 def plot_SVD_feature_data(tex_lw=240.71031, ppi=72):
     folder = "../data/20240910"
 
-    fig = plt.figure(figsize=(tex_lw / ppi * 2, tex_lw / ppi * 1.6))
+    fig = plt.figure(figsize=(tex_lw / ppi * 2, tex_lw / ppi * 1.5))
     plt.rc("text", usetex=True)
     plt.rc("text.latex", preamble=r"\usepackage{physics}")
 
@@ -91,15 +91,15 @@ def plot_SVD_feature_data(tex_lw=240.71031, ppi=72):
             mu = features[i]
             ax = axs[i]
             scatter = ax.scatter(sqv0, sqv1, sqv2, s=0.5, c=feature_data[mu], cmap="jet_r")
-            ax.view_init(elev=-30, azim=-110)
+            ax.view_init(elev=15, azim=55)
 
-            ax.set_xlabel("V0", fontsize=9, labelpad=-12, rotation=0)
-            ax.set_ylabel("V1", fontsize=9, labelpad=-5, rotation=0)
-            ax.set_zlabel("V2", fontsize=9, labelpad=-5, rotation=0)
+            ax.set_xlabel(r"$FV0$", fontsize=9, labelpad=-5, rotation=0)
+            ax.set_ylabel(r"$FV1$", fontsize=9, labelpad=-5, rotation=0)
+            ax.set_zlabel(r"$FV2$", fontsize=9, labelpad=-10, rotation=0)
             # ax.tick_params(labelsize=7, pad=0)
-            ax.tick_params("x", labelsize=7, pad=-0.5)
+            ax.tick_params("x", labelsize=7, pad=-2)
             ax.tick_params("y", labelsize=7, pad=-2)
-            ax.tick_params("z", labelsize=7, pad=-0.5)
+            ax.tick_params("z", labelsize=7, pad=-2)
 
             # ax.set_title(features_tex[i])
             cbar = fig.colorbar(scatter, ax=ax, fraction=0.02, pad=-0.0)  # , location="top", orientation='horizontal')

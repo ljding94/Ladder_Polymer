@@ -141,7 +141,7 @@ def plot_svd(folder, parameters):
 
     plt.tight_layout()
     plt.savefig(f"{folder}/{segment_type}_svd.png", dpi=300)
-    # plt.show()
+    plt.show()
     plt.close()
 
     all_lnSqV = np.inner(all_lnSq, np.transpose(svd.Vh))
@@ -309,13 +309,13 @@ def GaussianProcess_optimization(folder, parameters_train):
     # for linear Sq
     '''
     outofplane_theta_per_feature = {  # "Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
-        #"lnLmu": (np.logspace(-1, 1, grid_size), np.logspace(-3, -1, grid_size)), # done
+        #"lnLmu": (np.logspace(-1, 1, grid_size), np.logspace(-3, -1, grid_size)), #
         #"lnLsig": (np.logspace(-1, 1, grid_size), np.logspace(-1, 1, grid_size)),
         #"L": (np.logspace(-1, 1, grid_size), np.logspace(-4, -1, grid_size)),
         #"PDI": (np.logspace(-1, 1, grid_size), np.logspace(-2, 0, grid_size)),
         #"Rf": (np.logspace(-1, 1, grid_size), np.logspace(-4, -2, grid_size)), #
         #"Rg2": (np.logspace(-1, 1, grid_size), np.logspace(-3, -1, grid_size)), #
-        #"wRg2": (np.logspace(-2, 0, grid_size), np.logspace(-5, -2, grid_size)), # done
+        #"wRg2": (np.logspace(-2, 0, grid_size), np.logspace(-5, -2, grid_size)), #
     }
     '''
 
@@ -324,12 +324,13 @@ def GaussianProcess_optimization(folder, parameters_train):
     outofplane_theta_per_feature = {  # "Lmu": (np.logspace(-2, 2, grid_size), np.logspace(-4, 0, grid_size)),
         #"lnLmu": (np.logspace(-1, 1, grid_size), np.logspace(-3, -1, grid_size)),
         #"lnLsig": (np.logspace(-1, 1, grid_size), np.logspace(-1, 1, grid_size)),
-        "Rf": (np.logspace(-1, 1, grid_size), np.logspace(-4, -2, grid_size)),
-        #"alpha": (np.logspace(-1, 1, grid_size), np.logspace(-4, -2, grid_size)), # done
+        #"Rf": (np.logspace(-1, 1, grid_size), np.logspace(-4, -2, grid_size)),
+        "alpha": (np.logspace(-1, 1, grid_size), np.logspace(-4, -2, grid_size)), # done
         #"Rg2": (np.logspace(0, 1, grid_size), np.logspace(-10, -6, grid_size)), #
         #"wRg2": (np.logspace(-2, 0, grid_size), np.logspace(-5, -2, grid_size)), #
         #"L": (np.logspace(-2, 2, grid_size), np.logspace(-8, -6, grid_size)),
         #"PDI": (np.logspace(-1, 1, grid_size), np.logspace(-2, 0, grid_size)),
+        #"Kb": (np.logspace(-1, 1, grid_size), np.logspace(-2, 0, grid_size)),
     }
 
 

@@ -39,11 +39,11 @@ def main():
         print("hello!")
         # folder = "../data/scratch_local/20240610"
         # folder = "../data/20240713_partial"
-        folder = "../data/20241001"
+        folder = "../data/20241002"
         #segment_type = "inplane_twist"
         segment_type = "outofplane_twist"
-        rand_max = 7000
-        rand_read = 5000
+        rand_max = 4000
+        rand_read = 4000
 
         Ls = np.arange(50, 99.1, 1)
         logKts = [1.50]  # np.arange(0.00, 3.001, 0.10)

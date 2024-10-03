@@ -39,13 +39,13 @@ biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double
         lnLsig = 0;
         //lnLsig = 0.65 + 0.2 * rand_uni(gen); // [0.65,0.85] corresponds to roughly [1.75,2.06] PDI
         //Epar.Kt = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
-        Epar.Kt = 50 + 100 * rand_uni(gen);
+        Epar.Kt = 50 + 50 * rand_uni(gen);
         //Epar.Kb = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
-        //Epar.Kb = 50 + 100 * rand_uni(gen);
-        Epar.Kb = Epar.Kt;
+        Epar.Kb = 50 + 50 * rand_uni(gen);
+        //Epar.Kb = Epar.Kt;
         Rf = 0.3 + 0.5 * rand_uni(gen);
 
-        abs_alpha = 40 + 30*rand_uni(gen);  // let prefered angle from 47.5 to 57.5 degree
+        abs_alpha = 45 + 15*rand_uni(gen);  // let prefered angle from 47.5 to 57.5 degree
         abs_alpha = abs_alpha / 180.0 * M_PI; // convert to radian
     }
     std::cout << "setting system param:" << "lnLmu:" << lnLmu << ", L:"<< int(std::exp(lnLmu)) << ", lnLsig:" << lnLsig

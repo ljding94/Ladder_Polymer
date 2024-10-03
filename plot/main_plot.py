@@ -14,12 +14,13 @@ def main():
 
 
 
-    plot_monodisperse_polymer_Sq()
+    #plot_monodisperse_polymer_Sq()
     #plot_polymer_Sq()
 
     #plot_SVD_feature_data()
     #plot_GPR_data()
     #plot_PDDF_ACF_LML_data()
+    plot_LML_data()
 
     #plot_Sq_fitted_Rg2()
 
