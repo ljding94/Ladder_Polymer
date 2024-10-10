@@ -43,7 +43,7 @@ biaxial_polymer::biaxial_polymer(std::string segment_type_, double beta_, double
         //Epar.Kb = std::pow(10, 1.0 + 1.0 * rand_uni(gen));
         Epar.Kb = 50 + 50 * rand_uni(gen);
         //Epar.Kb = Epar.Kt;
-        Rf = 0.3 + 0.5 * rand_uni(gen);
+        Rf = 0.0 + 1.0 * rand_uni(gen);
 
         abs_alpha = 45 + 15*rand_uni(gen);  // let prefered angle from 47.5 to 57.5 degree
         abs_alpha = abs_alpha / 180.0 * M_PI; // convert to radian
@@ -165,7 +165,7 @@ bool biaxial_polymer::satisfy_self_avoiding_condition(int i)
     for (int j = 0; j < i; j++)
     {
         // comparing the distance between i's next segment's center and j
-        if (std::pow(polymer[i].R[0] + polymer[i].u[0] - polymer[j].R[0], 2) + std::pow(polymer[i].R[1] + polymer[i].u[1] - polymer[j].R[1], 2) + std::pow(polymer[i].R[2] + polymer[i].u[2] - polymer[j].R[2], 2) < 1)
+        if (std::pow(polymer[i].R[0] + polymer[i].u[0] - polymer[j].R[0], 2) + std::pow(polymer[i].R[1] + polymer[i].u[1] - polymer[j].R[1], 2) + std::pow(polymer[i].R[2] + polymer[i].u[2] - polymer[j].R[2], 2) < 0.04)
         {
             return false;
         }
@@ -479,7 +479,7 @@ observable biaxial_polymer::measure_observable(int bin_num)
     obs.Rg2 = calc_radius_of_gyration_square();
 
     double qB_i = 0.07; // 0.2*M_PI/L; //0.1/L; ;
-    double qB_f = 4;  // M_PI;//100.0/L; //M_PI;
+    double qB_f = 3;  // M_PI;//100.0/L; //M_PI;
     obs.SqB = calc_structure_factor(qB_i, qB_f, bin_num);
 
     obs.qB = std::vector<double>(bin_num, 0);

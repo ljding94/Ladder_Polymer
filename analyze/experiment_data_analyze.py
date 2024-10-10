@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy
-
+from ML_analysis import *
+from scipy.signal import savgol_filter
 
 def Guinier_fit(q, A, Rg2):
     return A*np.exp(-q**2*Rg2/3)
@@ -28,6 +29,7 @@ def fit_Gaussian_chain(Q, Sq, Sqerr):
 
 def plot_experimental_Sq():
     lb = 8.12  # segment length in Angstrom
+
     folder = "../data/incoh_banjo_expdata"
     # solvent
     filename = "../data/incoh_banjo_expdata/merged_incoh_L1_Iq.txt"
@@ -48,9 +50,9 @@ def plot_experimental_Sq():
     plt.grid(True, which='both', ls='--', linewidth=0.5)
     plt.tight_layout()
     plt.savefig(f"{folder}/merged_incoh_L2_Iq.png")
-    plt.show()
+    #plt.show()
 
-    f = 0.98
+    f = 0.96
     I_sub = I_L2 - I_sol * f
     dI_sub = np.sqrt(dI_L2**2 + (f * dI_sol)**2)
     plt.figure()
@@ -58,7 +60,7 @@ def plot_experimental_Sq():
     plt.errorbar(Q_L2*lb, I_sub, yerr=dI_sub, color="blue")
     QB = Q_L2 * lb
 
-    QBi, QBf = 0.07, 4
+    QBi, QBf = 0.07, 3
     plt.plot([QBi, QBi], [1e-4, 1e-1], 'k--')
     plt.plot([QBf, QBf], [1e-4, 1e-1], 'k--')
     print("QB[:10]", QB[:10])
@@ -69,7 +71,7 @@ def plot_experimental_Sq():
     plt.grid(True, which='both', ls='--', linewidth=0.5)
     plt.tight_layout()
     plt.savefig(f"{folder}/merged_incoh_L2_Iq_subtracted.png")
-    plt.show()
+    #plt.show()
 
     bin_bum = 100
     print("np.arange(bin_bum)/(bin_bum-1)", np.arange(bin_bum)/(bin_bum-1))
@@ -86,7 +88,7 @@ def plot_experimental_Sq():
     plt.grid(True, which='both', ls='--', linewidth=0.5)
     plt.tight_layout()
     plt.savefig(f"{folder}/merged_incoh_L2_Iq_subtracted_interpolated.png")
-    plt.show()
+    #plt.show()
 
     '''
     for n in [50, 55, 60, 65, 70, 75, 80]:
@@ -109,7 +111,8 @@ def plot_experimental_Sq():
         plt.show()
     '''
 
-    for n in [50, 55, 60, 65, 70, 75, 80]:
+    '''
+    for n in [50, 55, 60, 65, 70, 75, 80, 90, 95]:
         popt, perr = fit_Gaussian_chain(QBnew[:n], I_interp[:n], dI_interp[:n])
         print("popt", popt)
         print("perr", perr)
@@ -127,3 +130,33 @@ def plot_experimental_Sq():
                    header="QBnew,I_interp,dI_interp", delimiter=",", comments='')
         plt.savefig(f"{folder}/merged_incoh_L2_Iq_subtracted_interpolated_Gaussian_chain_fit_n{n}.png")
         plt.show()
+    '''
+
+
+    filename = "../data/scratch_local/20241010/obs_MC_outofplane_twist_lnLmu2.56495_lnLsig0.0_Kt50.0_Kb50.0_Rf0.20_alpha52.45_SqB.csv"
+    # print("reading: ", filename)
+    if os.path.exists(filename):
+        Sqdata = np.genfromtxt(filename, delimiter=',', skip_header=1, max_rows=1)
+        if len(Sqdata) == 0:
+            print(f"Warning: File {filename} is empty. Skipped")
+        features = Sqdata[2: 12]
+        features = np.insert(features, 10, features[9]/(features[8]*features[8]))  # add L^2/(L)^2 = PDI
+        qdata = np.genfromtxt(filename, delimiter=',', skip_header=3, max_rows=1)
+        Sq, q = Sqdata[12:], qdata[12:]
+
+    from scipy.interpolate import splrep, BSpline
+
+    I_smooth = savgol_filter(I_interp, 15, 2)
+
+    plt.figure()
+    #plt.errorbar(QBnew, I_interp/0.04, yerr=dI_interp/0.04, color="blue", linestyle='None')
+    plt.loglog(QBnew, I_interp/0.04, "x", color="blue", linestyle='None')
+    plt.loglog(QBnew, I_smooth/0.04, "-", color="gray")
+    plt.loglog(q, Sq, marker='None', color="black", linestyle='-', linewidth=2, label="MC GPR")
+    plt.loglog(q, np.pi/(q*12),":", color="red", label="q^-1")
+    plt.xlabel('QB', fontsize=14)
+    plt.ylabel('Intensity (cm⁻¹)', fontsize=14)
+    plt.legend()
+    plt.grid(True, which='both', ls='--', linewidth=0.5)
+    plt.tight_layout()
+    plt.show()

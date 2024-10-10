@@ -8,6 +8,7 @@ import random
 import time
 import os
 
+
 def main():
     if len(sys.argv) > 1:
         date = sys.argv[1]
@@ -39,11 +40,11 @@ def main():
         print("hello!")
         # folder = "../data/scratch_local/20240610"
         # folder = "../data/20240713_partial"
-        folder = "../data/20241002"
-        #segment_type = "inplane_twist"
+        folder = "../data/20241008"
+        # segment_type = "inplane_twist"
         segment_type = "outofplane_twist"
-        rand_max = 4000
-        rand_read = 4000
+        rand_max = 7000
+        rand_read = 6000
 
         Ls = np.arange(50, 99.1, 1)
         logKts = [1.50]  # np.arange(0.00, 3.001, 0.10)
@@ -58,7 +59,7 @@ def main():
                     parameters.append([segment_type, run_num])
                 if len(parameters) >= rand_read:
                     break
-                #[[segment_type, rand_num] for rand_num in range(rand_max)]
+                # [[segment_type, rand_num] for rand_num in range(rand_max)]
         else:
             parameters = [[segment_type, L, logKt, logKb, Rf] for L in Ls for logKt in logKts for logKb in logKbs for Rf in Rfs]
         # parameteres = [[segment_type, L, Kt, Kb, Rf] for Kt in Kts for Kb in Kbs for Rf in Rfs]
@@ -66,9 +67,9 @@ def main():
         print("total number of parameters", len(parameters))
 
         #plot_svd(folder, parameters)
-        #plot_pddf_acf(folder, parameters, max_z=6, n_bin=100)
+        # plot_pddf_acf(folder, parameters, max_z=6, n_bin=100)
         #return 0
-        #random.shuffle(parameters) # already random input, no need to shuffle
+        # random.shuffle(parameters) # already random input, no need to shuffle
         parameters_train = parameters[:int(0.7*len(parameters))]
         parameters_test = parameters[int(0.7*len(parameters)):]
 
@@ -79,7 +80,6 @@ def main():
         GaussianProcess_prediction(folder, parameters_test, all_feature_mean, all_feature_std, all_gp_per_feature)
         exp_filename = "../data/incoh_banjo_expdata/merged_incoh_L2_Iq_subtracted_interpolated_Guinier_fit_n65_normalized_Iq.txt"
         GaussianProcess_experiment_data_analysis(exp_filename, all_feature_mean, all_feature_std, all_gp_per_feature)
-
 
         '''
         # folder = "../data/20240923"
@@ -93,7 +93,6 @@ def main():
         wRg2 [73.32925232 73.32925222 73.32924183] [59.10325171 59.10325171 59.10325171]
         '''
 
-
         '''
         # folder = "20240924"
         use log Sq for training
@@ -105,7 +104,22 @@ def main():
         PDI [1.77397991 1.77397991 1.77397991] [0.16923028 0.16923028 0.16923028]
         '''
 
-        #calc_Sq_fitted_Rg2(folder, parameters_test)
+        '''
+        # folder = "20241001" 1 scattering point
+        Rf [0.54927329 0.54927329 0.54927329] [0.14426395 0.14426395 0.14426395]
+        alpha [0.9160535 0.9160535 0.9160535] [0.05034049 0.05034049 0.05034049]
+        Rg2 [10.59847523 10.67910678 11.39819318] [10.68198731 10.74959169 11.2985768 ]
+        L [15.04144205 15.17051481 16.33021438] [10.39124841 10.45540126 10.9744208 ]
+        '''
+        '''
+        # folde 20241003, 10 scattering point
+        Rf [0.55164029] [0.14557097]
+        alpha [0.91491818] [0.07468164]
+        Rg2 [13.75226712] [11.79215809]
+        L [14.6983906] [10.12148022]
+        '''
+
+        # calc_Sq_fitted_Rg2(folder, parameters_test)
 
 
 if __name__ == "__main__":
