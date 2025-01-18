@@ -19,7 +19,8 @@ def calc_Sq_discrete_infinite_thin_rod(q, L):
             for j in range(i+1, L):
                 Sqk += 2.0*np.sin(qk*(i-j))/(qk*(i-j))/(L*L)
         Sq[k] += Sqk
-    return np.array(Sq)
+    return np.ones(len(q))
+    #return np.array(Sq)
 
 
 def read_Delta_Sq_data(folder, parameters, L0=200):
@@ -145,7 +146,7 @@ def plot_svd(folder, parameters):
     plt.show()
     plt.close()
 
-    all_lnSqV = np.inner(all_lnSq, np.transpose(svd.Vh))
+    all_lnSqV = np.dot(all_lnSq, np.transpose(svd.Vh))
     plt.figure()
     fig = plt.figure(figsize=(2*len(all_feature_names), 8))
     axs = [fig.add_subplot(2, len(all_feature_names)//2 + 1, i+1, projection='3d') for i in range(len(all_feature_names))]
@@ -328,10 +329,11 @@ def GaussianProcess_optimization(folder, parameters_train):
         # "lnLmu": (np.logspace(-1, 1, grid_size), np.logspace(-3, -1, grid_size)),
         # "lnLsig": (np.logspace(-1, 1, grid_size), np.logspace(-1, 1, grid_size)),
         #"Rf": (np.logspace(-1, 1, grid_size), np.logspace(-4, -2, grid_size)),
-        #"alpha": (np.logspace(-1, 1, grid_size), np.logspace(-4, -2, grid_size)),
-        #"Rg2": (np.logspace(0, 1, grid_size), np.logspace(-8, -5, grid_size)), #
+        "alpha": (np.logspace(-1, 0, grid_size), np.logspace(-3, -1, grid_size)),
+        "L": (np.logspace(-1, 1, grid_size), np.logspace(-3, -1, grid_size)),
+        #"Rg2": (np.logspace(0, 1, grid_size), np.logspace(-8, -6, grid_size)), #
         # "wRg2": (np.logspace(-2, 0, grid_size), np.logspace(-5, -2, grid_size)), #
-        "L": (np.logspace(-2, 2, grid_size), np.logspace(-7, -4, grid_size)),
+
         # "PDI": (np.logspace(-1, 1, grid_size), np.logspace(-2, 0, grid_size)),
         # "Kb": (np.logspace(-1, 1, grid_size), np.logspace(-2, 0, grid_size)),
     }
@@ -504,7 +506,7 @@ def GaussianProcess_experiment_data_analysis(exp_filename, all_feature_mean, all
     print("I_exp", I_exp)
     print("I_exp_err", I_exp_err)
 
-    I_exp = np.maximum(I_exp, 1)
+    #I_exp = np.maximum(I_exp, 1)
     Sq_rod_50 = calc_Sq_discrete_infinite_thin_rod(QB, 50)
     I_exp = np.log(I_exp/Sq_rod_50)
 

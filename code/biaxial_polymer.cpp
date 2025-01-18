@@ -124,7 +124,7 @@ inner_structure biaxial_polymer::calc_rand_ut_vt_alpha(std::vector<double> u, st
 void biaxial_polymer::reset_polymer()
 {
     // reset polymer to a straight line
-    for (int i = 0; i < size(polymer); i++)
+    for (int i = 0; i < polymer.size(); i++)
     {
         polymer[i].phi = 0;
         polymer[i].theta = 0;
@@ -165,7 +165,7 @@ bool biaxial_polymer::satisfy_self_avoiding_condition(int i)
     for (int j = 0; j < i; j++)
     {
         // comparing the distance between i's next segment's center and j
-        if (std::pow(polymer[i].R[0] + polymer[i].u[0] - polymer[j].R[0], 2) + std::pow(polymer[i].R[1] + polymer[i].u[1] - polymer[j].R[1], 2) + std::pow(polymer[i].R[2] + polymer[i].u[2] - polymer[j].R[2], 2) < 0.04)
+        if (std::pow(polymer[i].R[0] + polymer[i].u[0] - polymer[j].R[0], 2) + std::pow(polymer[i].R[1] + polymer[i].u[1] - polymer[j].R[1], 2) + std::pow(polymer[i].R[2] + polymer[i].u[2] - polymer[j].R[2], 2) < 0.25)
         {
             return false;
         }
@@ -271,7 +271,7 @@ void biaxial_polymer::save_polymer_to_file(std::string filename)
     {
         f << "phi,theta,Rx,Ry,Rz,ux,uy,uz,vx,vy,vz,alpha,utx,uty,utz,vtx,vty,vtz\n";
 
-        for (int i = 0; i < size(polymer); i++)
+        for (int i = 0; i < polymer.size(); i++)
         {
             f << polymer[i].phi << "," << polymer[i].theta << "," << polymer[i].R[0] << "," << polymer[i].R[1] << "," << polymer[i].R[2] << "," << polymer[i].u[0] << "," << polymer[i].u[1] << "," << polymer[i].u[2] << "," << polymer[i].v[0] << "," << polymer[i].v[1] << "," << polymer[i].v[2] << "," << polymer[i].alpha << "," << polymer[i].ut[0] << "," << polymer[i].ut[1] << "," << polymer[i].ut[2] << "," << polymer[i].vt[0] << "," << polymer[i].vt[1] << "," << polymer[i].vt[2] << "\n";
         }
@@ -418,14 +418,27 @@ void biaxial_polymer::save_L_weighted_Sq_to_file(std::string filename, std::vect
     }
     f.close();
 }
-void biaxial_polymer::generate_and_save_polymer_ensemble(int number_of_polymer, int bin_num, std::string filename, bool save_detail)
+void biaxial_polymer::generate_and_save_polymer_ensemble(int number_of_polymer, int bin_num,std::string folder, std::string finfo ,int save_n_config,  bool save_detail)
 {
     std::vector<observable> obs_ensemble;
     // generate polymer ensemble and record observable
     int current_progress = 0;
     int polymer_count = 0;
+
+    if (save_n_config >0 && !std::filesystem::exists(folder + "/" + finfo))
+    {
+        std::cout << finfo << " folder not exist\n";
+        std::cout << "creating folder" << folder + "/" + finfo << "\n";
+        std::filesystem::create_directory(folder + "/" + finfo);
+    }
+
     while(polymer_count < number_of_polymer)
     {
+        if(polymer_count<save_n_config)
+        {
+            std::string filename = folder + "/" + finfo + "/polymer_" + std::to_string(polymer_count) + ".csv";
+            save_polymer_to_file(filename);
+        }
         reset_polymer();
         if(generate_polymer())
         {
@@ -445,13 +458,12 @@ void biaxial_polymer::generate_and_save_polymer_ensemble(int number_of_polymer, 
     // std::string gr_filename = filename.substr(0, filename.find_last_of(".")) + "_gr.csv";
     // save_distribution_function_to_file(gr_filename, "gr", obs_ensemble, save_detail);
 
-
     if(save_detail)
     {
-        std::string Sq_filename = filename.substr(0, filename.find_last_of(".")) + "_SqB_detail.csv";
+        std::string Sq_filename = folder + "/obs_MC_" + finfo + "_SqB_detail.csv";
         save_L_weighted_Sq_to_file(Sq_filename, obs_ensemble, true);
     }
-    std::string Sq_filename = filename.substr(0, filename.find_last_of(".")) + "_SqB.csv";
+    std::string Sq_filename =folder + "/obs_MC_" + finfo + "_SqB.csv";
     save_L_weighted_Sq_to_file(Sq_filename, obs_ensemble, false);
     // save_distribution_function_to_file(Sq_filename, "SqB", obs_ensemble, save_detail);
 }
@@ -463,7 +475,7 @@ observable biaxial_polymer::measure_observable(int bin_num)
     obs.E = 0;
     obs.Tot_phi = 0;
     obs.Tot_theta = 0;
-    for (int i = 0; i < size(polymer); i++)
+    for (int i = 0; i < polymer.size(); i++)
     {
         obs.E += 0.5 * Epar.Kt * polymer[i].phi * polymer[i].phi + 0.5 * Epar.Kb * polymer[i].theta * polymer[i].theta;
         obs.Tot_phi += polymer[i].phi;
@@ -494,7 +506,7 @@ observable biaxial_polymer::measure_observable(int bin_num)
 std::vector<double> biaxial_polymer::calc_pair_dsitribution_function(double r_i, double r_f, int bin_num)
 {
     // measure pair distribution function
-    int L = size(polymer);
+    int L = polymer.size();
 
     std::vector<double> gr(bin_num, 0);
     int bin;
@@ -524,7 +536,7 @@ std::vector<double> biaxial_polymer::calc_structure_factor(double qB_i, double q
     std::vector<std::vector<double>> R_all{}; // all scattering point's R[axis] value, including all scattering points in each segment
     std::vector<double> R_scatter{0, 0, 0};
 
-    for (int i = 0; i < size(polymer); i++)
+    for (int i = 0; i < polymer.size(); i++)
     {
         for (int j = 0; j < polymer[i].scattering_points.size(); j++)
         {
@@ -578,7 +590,7 @@ std::vector<std::vector<double>> biaxial_polymer::calc_structure_factor_2d(std::
 
     std::vector<std::vector<double>> R_all{}; // all scattering point's R[axis] value, including all scattering points in each segment
 
-    for (int i = 0; i < size(polymer); i++)
+    for (int i = 0; i < polymer.size(); i++)
     {
         R_all.push_back(polymer[i].R);
     }
@@ -640,7 +652,7 @@ std::vector<std::vector<double>> biaxial_polymer::calc_structure_factor_2d(std::
 
 double biaxial_polymer::calc_radius_of_gyration_square()
 {
-    int L = size(polymer);
+    int L = polymer.size();
     // calculate radius of gyration
     double Rg2 = 0;
     // find center of mass
@@ -667,7 +679,7 @@ double biaxial_polymer::calc_radius_of_gyration_square()
 #pragma region : useful tools
 std::vector<double> biaxial_polymer::calc_rod_structure_factor(std::vector<double> qB)
 {
-    int L = size(polymer);
+    int L = polymer.size();
     // measure structure factor
     std::vector<double> SqB(qB.size(), 1.0 / L); // initialize with 1 due to self overlaping term (see S.H. Chen 1986 eq 18)
     for (int i = 0; i < L - 1; i++)

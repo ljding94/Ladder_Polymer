@@ -40,11 +40,12 @@ def main():
         print("hello!")
         # folder = "../data/scratch_local/20240610"
         # folder = "../data/20240713_partial"
-        folder = "../data/20241008"
+        folder = "../data/20241011"
         # segment_type = "inplane_twist"
         segment_type = "outofplane_twist"
         rand_max = 7000
         rand_read = 6000
+
 
         Ls = np.arange(50, 99.1, 1)
         logKts = [1.50]  # np.arange(0.00, 3.001, 0.10)
@@ -66,9 +67,9 @@ def main():
         print("parameters", parameters)
         print("total number of parameters", len(parameters))
 
-        #plot_svd(folder, parameters)
+        plot_svd(folder, parameters)
         # plot_pddf_acf(folder, parameters, max_z=6, n_bin=100)
-        #return 0
+        return 0
         # random.shuffle(parameters) # already random input, no need to shuffle
         parameters_train = parameters[:int(0.7*len(parameters))]
         parameters_test = parameters[int(0.7*len(parameters)):]
@@ -78,7 +79,8 @@ def main():
         all_feature_names, all_feature_mean, all_feature_std, all_gp_per_feature = read_gp_and_feature_stats(folder, segment_type)
 
         GaussianProcess_prediction(folder, parameters_test, all_feature_mean, all_feature_std, all_gp_per_feature)
-        exp_filename = "../data/incoh_banjo_expdata/merged_incoh_L2_Iq_subtracted_interpolated_Guinier_fit_n65_normalized_Iq.txt"
+        #exp_filename = "../data/incoh_banjo_expdata/merged_incoh_L2_Iq_subtracted_interpolated_Guinier_fit_n65_normalized_Iq.txt"
+        exp_filename = "../data/incoh_banjo_expdata/merged_incoh_L2_Iq_subtracted_interpolated_Guinier_n65_patch_smooth_normalized_Iq.txt"
         GaussianProcess_experiment_data_analysis(exp_filename, all_feature_mean, all_feature_std, all_gp_per_feature)
 
         '''
@@ -117,6 +119,22 @@ def main():
         alpha [0.91491818] [0.07468164]
         Rg2 [13.75226712] [11.79215809]
         L [14.6983906] [10.12148022]
+        '''
+
+        '''
+        # 20241011 using DellnSq
+        Rf [0.13928523] [0.07481336]
+        alpha [0.89466945] [0.04913829]
+        Rg2 [2.0741308] [0.28353638]
+        L [11.65300275] [2.81057261]
+        '''
+
+        '''
+        # 20241011 using lnSq
+        Rf [0.13928482] [0.07481301]
+        alpha [0.89466918] [0.04913803]
+        Rg2 [2.07414095] [0.28353317]
+        L [11.65301387] [2.81055741]
         '''
 
         # calc_Sq_fitted_Rg2(folder, parameters_test)

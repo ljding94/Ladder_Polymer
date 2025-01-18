@@ -1,43 +1,43 @@
 from Sq_plot import read_Delta_Sq_data
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score
+
 # import pandas as pd
 
 
 def plot_GPR_data(tex_lw=240.71031, ppi=72):
 
-    folder = "../data/20240910"
-    fig = plt.figure(figsize=(tex_lw / ppi * 2, tex_lw / ppi * 0.42))  # 0.65))
+    folder = "../data/20241011"
+    fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.9))  # 0.65))
     plt.rc("text", usetex=True)
     plt.rc("text.latex", preamble=r"\usepackage{physics}")
-    ax1 = fig.add_subplot(151)
-    ax2 = fig.add_subplot(152)
-    ax3 = fig.add_subplot(153)
-    ax4 = fig.add_subplot(154)
-    ax5 = fig.add_subplot(155)
+    ax1 = fig.add_subplot(221)
+    ax2 = fig.add_subplot(222)
+    ax3 = fig.add_subplot(223)
+    ax4 = fig.add_subplot(224)
 
     # features to plot
     feature_to_tex = {
-        "L": r"$\overline{L}$",
-        "PDI": r"$PDI$",
-        "Rf": r"$R_f$",
-        "Rg2": r"$\overline{R_g^2}$",
-        "wRg2": r"$\widetilde{R_g^2}$"
+        "Rf": r"$R_a$",
+        "alpha": r"$\alpha$",
+        "L": r"$L$",
+        "Rg2": r"$R_g^2$",
     }
     segment_type_map = {"outofplane_twist": "2D CANAL", "inplane_twist": "3D CANAL"}
-    axs = [ax1, ax2, ax3, ax4, ax5]
-    major_locator = [40, 0.5, 0.2, 40, 200]
+    axs = [ax1, ax2, ax3, ax4]
+    major_locator = [0.4, 0.1, 20, 60]
     # minor_locator = [10, 0.05, 20]
     for segment_type in ["outofplane_twist"]:
-        if (segment_type == "inplane_twist"):
+        if segment_type == "inplane_twist":
             # axs = [ax11, ax12, ax13]
             # color = "royalblue"
             color = "blue"
             marker = "1"
-        elif (segment_type == "outofplane_twist"):
+        elif segment_type == "outofplane_twist":
             # axs = [ax21, ax22, ax23]
             # color = "tomato"
-            color = "red"
+            color = "tomato"
             marker = "."
         i = -1
         for feature, feature_tex in feature_to_tex.items():
@@ -46,44 +46,47 @@ def plot_GPR_data(tex_lw=240.71031, ppi=72):
             ax = axs[i]
             mu, mu_predict, my_predict_err = np.loadtxt(f"{folder}/data_{segment_type}_{mu}_prediction.txt", skiprows=1, delimiter=",", unpack=True)
             # color = plt.cm.rainbow((mu - np.min(mu)) / (np.max(mu) - np.min(mu)))
-            ax.scatter(mu, mu_predict, color=color, marker=marker, s=2, alpha=0.5, lw=0.5)
+            ax.scatter(mu, mu_predict, color=color, marker=marker, s=2, alpha=0.5, lw=0.5, rasterized=True)
             # sm = plt.cm.ScalarMappable(cmap=plt.cm.rainbow, norm=plt.Normalize(vmin=np.min(mu), vmax=np.max(mu)))
             # sm.set_array([])
             # cbar = plt.colorbar(sm, ax=ax, orientation='vertical', fraction=0.046, pad=0.04)
             # cbar.set_label('Color Scale', fontsize=7)
             # cbar.ax.tick_params(labelsize=7)
             ax.tick_params(labelsize=7, which="both", direction="in", top="on", right="on")
-            ax.legend(title=feature_tex, fontsize=7, frameon=False, loc="upper left", handlelength=0.5, handletextpad=0.5)
-            max_min = (np.max(mu)-np.min(mu))
-            xlim = [np.min(mu)-0.1*max_min, np.max(mu)+0.1*max_min]
+            # ax.legend(title=feature_tex, fontsize=7, frameon=False, loc="upper left", handlelength=0.5, handletextpad=0.5)
+            max_min = np.max(mu) - np.min(mu)
+            xlim = [np.min(mu) - 0.1 * max_min, np.max(mu) + 0.1 * max_min]
             ax.plot(xlim, xlim, "k-", linewidth=0.25, alpha=0.5)
             ax.set_xlim(xlim)
             ax.set_ylim(xlim)
             ax.xaxis.set_major_locator(plt.MultipleLocator(major_locator[i]))
-            ax.xaxis.set_minor_locator(plt.MultipleLocator(major_locator[i]*0.5))
+            ax.xaxis.set_minor_locator(plt.MultipleLocator(major_locator[i] * 0.5))
             ax.yaxis.set_major_locator(plt.MultipleLocator(major_locator[i]))
-            ax.yaxis.set_minor_locator(plt.MultipleLocator(major_locator[i]*0.5))
+            ax.yaxis.set_minor_locator(plt.MultipleLocator(major_locator[i] * 0.5))
             ax.grid(True, which="both", linestyle="--", linewidth=0.5)
-            ax.set_aspect('equal')
+            ax.set_aspect("equal")
+            ax.text(0.2, 0.7, feature_tex, transform=ax.transAxes, fontsize=9)
+            r2 = r2_score(mu, mu_predict)
+            ax.text(0.4, 0.1, rf"$r^2={r2:.4f}$", transform=ax.transAxes, fontsize=9)
 
-    ax1.set_ylabel("ML Inversion", fontsize=9, labelpad=0)
-    ax3.set_xlabel("MC References", fontsize=9, labelpad=0)
-    # axall = fig.add_subplot(111, frameon=True)
-    # axall.tick_params(labelcolor='none', which='both', top=False, bottom=False, left=False, right=False)
-    # axall.text(0.4,-0.25,"MC References", fontsize=9)
-    # axall.text(-0.05,0.2,"ML Inversion", fontsize=9, rotation=90)
-    # axall.set_xlabel("MC References", fontsize=9, labelpad=-15)
-    # axall.set_ylabel("ML Inversion", fontsize=9, labelpad=-3)
+    # ax1.set_ylabel("ML Inversion", fontsize=9, labelpad=0)
+    # ax3.set_xlabel("MC References", fontsize=9, labelpad=0)
+    axall = fig.add_subplot(111, frameon=False)
+    axall.tick_params(labelcolor="none", which="both", top=False, bottom=False, left=False, right=False)
+    axall.set_xlabel("MC References", fontsize=9, labelpad=-4)
+    axall.set_ylabel("ML Inversion", fontsize=9, labelpad=-9)
 
     # add annotation
-    annotation = [r"$\mathbf{(%s)}$" % s for s in ["a", "b", "c", "d", "e", "f"]]
+    #annotation = [r"$\mathbf{(%s)}$" % s for s in ["a", "b", "c", "d", "e", "f"]]
+    annotation = [r"$(%s)$" % s for s in ["a", "b", "c", "d", "e", "f"]]
     for ax in axs:  # , ax21, ax22, ax23]:
-        ax.text(0.8, 0.1, annotation.pop(0), fontsize=9, transform=ax.transAxes)
+        ax.text(0.8, 0.25, annotation.pop(0), fontsize=9, transform=ax.transAxes)
 
-    plt.tight_layout(pad=0.1)
+    plt.tight_layout(pad=0.3)
+    plt.subplots_adjust(left=0.1, bottom=0.1)
     # plt.show()
     plt.savefig("figures/GPR.pdf", format="pdf", dpi=300)
-    # plt.savefig("figures/GPR.png", format="png", dpi=300)
+    plt.savefig("figures/GPR.png", format="png", dpi=300)
     plt.show()
     plt.close()
 
@@ -110,10 +113,10 @@ def plot_PDDF_ACF_LML_data(tex_lw=455.24408, ppi=72):
     features = ["L", "Rf", "Rg2"]
     features_tex = [r"$\left<L\right>$", r"$R_f$", r"$R_g$"]
     for segment_type in ["outofplane_twist"]:
-        if (segment_type == "inplane_twist"):
+        if segment_type == "inplane_twist":
             axp = ax11
             axs = [ax12, ax13, ax14]
-        elif (segment_type == "outofplane_twist"):
+        elif segment_type == "outofplane_twist":
             axp = ax21
             axs = [ax22, ax23, ax24]
 
@@ -124,7 +127,7 @@ def plot_PDDF_ACF_LML_data(tex_lw=455.24408, ppi=72):
         nz = np.argmax(z >= max_z)
 
         p_z_max = np.max(p_z[:nz])
-        axp.plot(z[:nz], p_z[:nz]/p_z_max, linewidth=1, label=r"$\frac{p}{p_{max}}$")
+        axp.plot(z[:nz], p_z[:nz] / p_z_max, linewidth=1, label=r"$\frac{p}{p_{max}}$")
         axp.plot(z[:nz], acf_L[:nz], linewidth=1, label=r"$C_{\left<L\right>}$")
         axp.plot(z[:nz], acf_Rf[:nz], linewidth=1, label=r"$C_{R_f}$")
         axp.plot(z[:nz], acf_Rg2[:nz], linewidth=1, label=r"$C_{R_g^2}$")
@@ -149,11 +152,11 @@ def plot_PDDF_ACF_LML_data(tex_lw=455.24408, ppi=72):
 
             ax.contour(Theta0, Theta1, LML, linewidths=1, levels=200)
             # ax.imshow(LML,extent=[Theta0.min(), Theta0.max(), Theta1.min(), Theta1.max()])
-            ax.plot([gp_theta0], [gp_theta1], 'x', color='red', markersize=5, markeredgewidth=2)  # , label=r"l=%.2e, $\sigma$=%.2e" % (gp_theta0, gp_theta1))
+            ax.plot([gp_theta0], [gp_theta1], "x", color="red", markersize=5, markeredgewidth=2)  # , label=r"l=%.2e, $\sigma$=%.2e" % (gp_theta0, gp_theta1))
             ax.set_xlabel(r"$l$", fontsize=10, labelpad=0)
             ax.set_ylabel(r"$\sigma$", fontsize=10, labelpad=-3)
-            ax.set_xscale('log')
-            ax.set_yscale('log')
+            ax.set_xscale("log")
+            ax.set_yscale("log")
             ax.legend(fontsize=7, loc="upper left", title=features_tex[i], frameon=False)
             ax.tick_params(labelsize=7, which="both", direction="in", top="on", right="on")
             # if (segment_type == "inplane_twist"):
@@ -164,12 +167,12 @@ def plot_PDDF_ACF_LML_data(tex_lw=455.24408, ppi=72):
             # ax.tick_params(labelleft=False)
 
             # TODO: consider these later
-            '''
+            """
             ax.xaxis.set_major_locator(plt.MultipleLocator(20))
             ax.xaxis.set_minor_locator(plt.MultipleLocator(10))
             ax.yaxis.set_major_locator(plt.MultipleLocator(20))
             ax.yaxis.set_minor_locator(plt.MultipleLocator(10))
-            '''
+            """
     # add annotation
     annotation = [r"$\mathbf{(a)}$", r"$\mathbf{(b)}$", r"$\mathbf{(c)}$", r"$\mathbf{(d)}$", r"$\mathbf{(e)}$", r"$\mathbf{(f)}$", r"$\mathbf{(g)}$", r"$\mathbf{(h)}$"]
     for ax in [ax11, ax12, ax13, ax14, ax21, ax22, ax23, ax24]:
@@ -184,29 +187,42 @@ def plot_PDDF_ACF_LML_data(tex_lw=455.24408, ppi=72):
     plt.close()
 
 
-def plot_LML_data(tex_lw=455.24408, ppi=72):
+def plot_LML_data(tex_lw=240.71031, ppi=72):
 
-    folder = "../data/20240910"
-    fig = plt.figure(figsize=(tex_lw / ppi * 2, tex_lw / ppi * 0.4))  # 0.65))
+    folder = "../data/20241011"
+    fig = plt.figure(figsize=(tex_lw / ppi * 1, tex_lw / ppi * 0.9))  # 0.65))
     plt.rc("text", usetex=True)
     plt.rc("text.latex", preamble=r"\usepackage{physics}")
-    ax1 = fig.add_subplot(151)
-    ax2 = fig.add_subplot(152)
-    ax3 = fig.add_subplot(153)
-    ax4 = fig.add_subplot(154)
-    ax5 = fig.add_subplot(155)
+    ax1 = fig.add_subplot(221)
+    ax2 = fig.add_subplot(222)
+    ax3 = fig.add_subplot(223)
+    ax4 = fig.add_subplot(224)
 
     # features to plot
     feature_to_tex = {
-        "L": r"$\overline{L}$",
-        "PDI": r"$PDI$",
-        "Rf": r"$R_f$",
-        "Rg2": r"$\overline{R_g^2}$",
-        "wRg2": r"$\widetilde{R_g^2}$"
+        "Rf": r"$R_a$",
+        "alpha": r"$\alpha$",
+        "L": r"$L$",
+        "Rg2": r"$R_g^2$",
     }
-    segment_type_map = {"outofplane_twist": "2D CANAL", "inplane_twist": "3D CANAL"}
-    axs = [ax1, ax2, ax3, ax4, ax5]
-
+    axs = [ax1, ax2, ax3, ax4]
+    grid_size = 2
+    ticks = [
+        (np.logspace(-1, 0, grid_size), np.logspace(-3, -2, grid_size)),
+        (np.logspace(-1, 0, grid_size), np.logspace(-3, -2, grid_size)),
+        (np.logspace(-1, 0, grid_size), np.logspace(-3, -2, grid_size)),
+        (np.logspace(0, 0.5, grid_size), np.logspace(-5, -4, grid_size)),
+        (np.logspace(0.2, 0.4, grid_size), np.logspace(-7, -5, grid_size)),
+        (np.logspace(0.3, 0.6, grid_size), np.logspace(-7, -5, grid_size)),
+    ]
+    ticklabels = [
+        ((r"$10^{-1}$", r"$10^{0}$"), (r"$10^{-3}$", r"$10^{-2}$")),
+        ((r"$10^{-1}$", r"$10^{0}$"), (r"$10^{-3}$", r"$10^{-2}$")),
+        ((r"$10^{-1}$", r"$10^{0}$"), (r"$10^{-3}$", r"$10^{-2}$")),
+        ((r"$10^{0}$", r"$10^{0.5}$"), (r"$10^{-5}$", r"$10^{-4}$")),
+        ((r"$10^{0.2}$", r"$10^{0.4}$"), (r"$10^{-7}$", r"$10^{-5}$")),
+        ((r"$10^{0.3}$", r"$10^{0.6}$"), (r"$10^{-7}$", r"$10^{-5}$")),
+    ]
     for segment_type in ["outofplane_twist"]:
         i = -1
         for feature, feature_tex in feature_to_tex.items():
@@ -221,32 +237,42 @@ def plot_LML_data(tex_lw=455.24408, ppi=72):
 
             ax.contour(Theta0, Theta1, LML, linewidths=1, levels=200)
             # ax.imshow(LML,extent=[Theta0.min(), Theta0.max(), Theta1.min(), Theta1.max()])
-            ax.plot([gp_theta0], [gp_theta1], 'x', color='red', markersize=5, markeredgewidth=2)  # , label=r"l=%.2e, $\sigma$=%.2e" % (gp_theta0, gp_theta1))
-            #ax.set_xlabel(r"$l$", fontsize=10, labelpad=0)
-            #ax.set_ylabel(r"$\sigma$", fontsize=10, labelpad=-3)
-            ax.set_xscale('log')
-            ax.set_yscale('log')
+            ax.plot([gp_theta0], [gp_theta1], "x", color="k", markersize=5, markeredgewidth=1)  # , label=r"l=%.2e, $\sigma$=%.2e" % (gp_theta0, gp_theta1))
+            # ax.set_xlabel(r"$l$", fontsize=10, labelpad=0)
+            # ax.set_ylabel(r"$\sigma$", fontsize=10, labelpad=-3)
+            ax.set_xscale("log")
+            ax.set_yscale("log")
             ax.legend(fontsize=7, loc="upper right", title=feature_tex, frameon=False)
-            ax.tick_params(labelsize=7, which="both", direction="in", top="on", right="on") #, labelleft=False, labelbottom=False)
+            ax.tick_params(labelsize=7, which="both", direction="in", top="on", right="on")  # , labelleft=False, labelbottom=False)
+            #axs[i].set_xticks(ticks[i][0])
+            #axs[i].set_yticks(ticks[i][1])
+            #axs[i].set_xticklabels(ticklabels[i][0])
+            #axs[i].set_yticklabels(ticklabels[i][1])
+            axs[i].minorticks_off()
 
             # TODO: consider these later
-            '''
+            """
             ax.xaxis.set_major_locator(plt.MultipleLocator(20))
             ax.xaxis.set_minor_locator(plt.MultipleLocator(10))
             ax.yaxis.set_major_locator(plt.MultipleLocator(20))
             ax.yaxis.set_minor_locator(plt.MultipleLocator(10))
-            '''
-    ax1.set_ylabel(r"$l$", fontsize=9, labelpad=0)
-    ax3.set_xlabel(r"$\sigma$", fontsize=9, labelpad=0)
-    # add annotation
-    annotation = [r"$\mathbf{(%s)}$" % s for s in ["a", "b", "c", "d", "e", "f"]]
-    for ax in axs:  # , ax21, ax22, ax23]:
-        ax.text(0.8, 0.1, annotation.pop(0), fontsize=9, transform=ax.transAxes)
+            """
+    axall = fig.add_subplot(111, frameon=False)
+    axall.tick_params(labelcolor="none", which="both", top=False, bottom=False, left=False, right=False)
+    axall.set_xlabel(r"$l$", fontsize=9, labelpad=-4)
+    axall.set_ylabel(r"$\sigma$", fontsize=9, labelpad=0)
 
-    # plt.tight_layout(h_pad=0.01, w_pad=0.0)
-    plt.tight_layout(pad=0.05, h_pad=-0.1, w_pad=-0.1)
-    # fig.subplots_adjust(wspace=0.1, hspace=0.1)
+    # add annotation
+    annotation = [r"$(%s)$" % s for s in ["a", "b", "c", "d"]]
+    for ax in axs:  # , ax21, ax22, ax23]:
+        ax.text(0.8, 0.2, annotation.pop(0), fontsize=9, transform=ax.transAxes)
+
+    #plt.tight_layout(h_pad=0.01, w_pad=0.0)
+    plt.tight_layout(pad=0.05)
+    plt.subplots_adjust(left=0.12, bottom=0.1)
+    #fig.subplots_adjust(wspace=0.1, hspace=0.1)
     # plt.show()
     plt.savefig("figures/LML.pdf", format="pdf", dpi=300)
+    plt.savefig("figures/LML.png", format="png", dpi=300)
     plt.show()
     plt.close()
