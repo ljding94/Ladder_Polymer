@@ -16,7 +16,7 @@ def main():
     #plot_LML_data()
     #plot_GPR_data()
 
-    #plot_exp_ML_fitting()
+    plot_exp_ML_fitting()
     #plot_exp_config()
     plot_exp_ML_fitting_TOC()
 

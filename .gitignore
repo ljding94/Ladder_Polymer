@@ -4,6 +4,7 @@ code/local_run.sh
 code/*.o
 !analyze
 analyze/__pycache__
+.DS_Store
 !plot/*.py
 !README.md
 !.gitignore
