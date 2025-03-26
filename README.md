@@ -2,6 +2,20 @@
 
 This project simulates the behavior of ladder polymers using Monte Carlo methods and Gaussian Process Regression (GPR) for data analysis. The sections below describe the polymer model and outline the workflow for generating simulation data, training the GPR, and applying experimental data.
 
+Note: This code is intended primarily for the author's own use and may not be very user-friendly. For assistance or questions regarding its usage please contact the author.
+
+
+## Requirements
+
+The following packages are required to run the analysis code:
+
+### Python Packages
+- **numpy 2.1.2**: For numerical operations and array handling
+- **matplotlib 3.9.2**: For data visualization and plotting
+- **scikit-learn 1.5.2**: For Gaussian Process Regression implementation
+- **scipy 1.14.1**: For scientific calculations
+- **pandas 2.2.3**: For data manipulation and handling
+
 ## Model
 
 Each monomer unit of the polymer is modeled as a rectangular segment with an orientation defined by two unit vectors:
@@ -79,3 +93,5 @@ Prepare and process your experimental scattering data as follows:
   Rebin the data to match the \(q\) values used in the simulation. This step can be performed using the SASview software.
 
 After preprocessing, the experimental data can be fed into the GPR model in the same manner as the simulation test data.
+
+
